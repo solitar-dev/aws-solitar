@@ -2,6 +2,7 @@ package org.tobynguyen.solitar
 
 import com.jayway.jsonpath.JsonPath
 import java.time.Duration
+import kotlin.test.assertEquals
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation
 import org.junit.jupiter.api.Order
@@ -9,7 +10,11 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Import
+import org.springframework.context.annotation.Primary
 import org.springframework.http.MediaType
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
@@ -20,6 +25,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.header
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.testcontainers.localstack.LocalStackContainer
 import org.testcontainers.utility.DockerImageName
+import org.tobynguyen.solitar.util.CodeGenerator
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
 import software.amazon.awssdk.regions.Region
@@ -42,9 +48,11 @@ import software.amazon.awssdk.services.sqs.SqsClient
 )
 @AutoConfigureMockMvc
 @TestMethodOrder(OrderAnnotation::class)
+@Import(SolitarApplicationTests.TestBeans::class)
 class SolitarApplicationTests {
 
     @Autowired private lateinit var mockMvc: MockMvc
+    @Autowired private lateinit var codeGenerator: ControllableCodeGenerator
 
     @Test
     @Order(1)
@@ -100,6 +108,31 @@ class SolitarApplicationTests {
         check(sawTooMany) { "expected at least one 429 once capacity was exhausted" }
     }
 
+    @Test
+    @Order(5)
+    fun `code collision is retried and never overwrites an existing link`() {
+        val taken = "Taken00"
+        val fresh = "Fresh01"
+
+        // First create lands on `taken`.
+        codeGenerator.script(taken)
+        assertEquals(taken, createShortCode("https://example.com/first"))
+
+        // Second create: generator yields `taken` (collision) then `fresh` (success).
+        codeGenerator.script(taken, fresh)
+        assertEquals(fresh, createShortCode("https://example.com/second"))
+
+        // The original mapping is intact and the new code resolves to the new target.
+        mockMvc
+            .perform(get("/$taken"))
+            .andExpect(status().isMovedPermanently)
+            .andExpect(header().string("Location", "https://example.com/first"))
+        mockMvc
+            .perform(get("/$fresh"))
+            .andExpect(status().isMovedPermanently)
+            .andExpect(header().string("Location", "https://example.com/second"))
+    }
+
     private fun createShortCode(url: String): String {
         val body =
             mockMvc
@@ -113,6 +146,26 @@ class SolitarApplicationTests {
                 .response
                 .contentAsString
         return JsonPath.read(body, "$.shortCode") as String
+    }
+
+    /**
+     * Deterministic generator for the collision test; falls back to real random when unscripted.
+     */
+    class ControllableCodeGenerator : CodeGenerator() {
+        private val scripted = ArrayDeque<String>()
+
+        fun script(vararg codes: String) {
+            scripted.clear()
+            scripted.addAll(codes)
+        }
+
+        override fun generate(): String =
+            if (scripted.isEmpty()) super.generate() else scripted.removeFirst()
+    }
+
+    @TestConfiguration
+    class TestBeans {
+        @Bean @Primary fun controllableCodeGenerator() = ControllableCodeGenerator()
     }
 
     companion object {
