@@ -1,8 +1,9 @@
 {
-	"oxc.fmt.configPath": ".oxfmtrc.json",
-	"oxc.typeAware": true,
+	"oxc.fmt.configPath": "vite.config.ts",
+
 	"editor.defaultFormatter": "oxc.oxc-vscode",
 	"editor.formatOnSave": true,
+	"editor.formatOnSaveMode": "file",
 	"editor.codeActionsOnSave": {
 		"source.fixAll.oxc": "always"
 	},
@@ -14,18 +15,5 @@
 	},
 	"js/ts.preferences.autoImportSpecifierExcludeRegexes": ["^(node:)?os$"],
 	"js/ts.tsdk.path": "node_modules/typescript/lib",
-	"cSpell.words": ["Solitär"],
-	"[javascript]": {
-		"editor.defaultFormatter": "oxc.oxc-vscode"
-	},
-	"[javascriptreact]": {
-		"editor.defaultFormatter": "oxc.oxc-vscode"
-	},
-	"[typescript]": {
-		"editor.defaultFormatter": "oxc.oxc-vscode"
-	},
-	"[typescriptreact]": {
-		"editor.defaultFormatter": "oxc.oxc-vscode"
-	},
-	"editor.formatOnSaveMode": "file"
+	"cSpell.words": ["Solitär"]
 }
