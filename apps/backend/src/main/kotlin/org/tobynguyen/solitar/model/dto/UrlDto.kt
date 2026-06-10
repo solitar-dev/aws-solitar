@@ -14,7 +14,3 @@ data class UrlCreateDto(
 )
 
 data class UrlResponseDto(val originalUrl: String, val shortCode: String)
-
-data class UrlForwardResponseDto(val originalUrl: String)
-
-data class UrlForwardDto(@field:NotBlank(message = "Short code is required") val shortCode: String)

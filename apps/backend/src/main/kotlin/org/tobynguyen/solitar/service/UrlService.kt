@@ -7,8 +7,6 @@ import org.tobynguyen.solitar.exception.CodeGenerationException
 import org.tobynguyen.solitar.exception.UrlNotFoundException
 import org.tobynguyen.solitar.messaging.QueueNames
 import org.tobynguyen.solitar.model.dto.UrlCreateDto
-import org.tobynguyen.solitar.model.dto.UrlForwardDto
-import org.tobynguyen.solitar.model.dto.UrlForwardResponseDto
 import org.tobynguyen.solitar.model.entity.UrlEntity
 import org.tobynguyen.solitar.model.event.LinkCreatedEvent
 import org.tobynguyen.solitar.model.event.LinkForwardedEvent
@@ -36,13 +34,6 @@ class UrlService(
 
         return entity
     }
-
-    /**
-     * Deprecated JSON forward API (frontend legacy). Shares [resolve]; superseded by `GET /{code}`,
-     * retire in P5/P6 once nothing calls `POST /forward`.
-     */
-    fun getOriginalUrl(data: UrlForwardDto): UrlForwardResponseDto =
-        UrlForwardResponseDto(resolve(data.shortCode).originalUrl)
 
     /**
      * Mint a short code with a conditional write: generate a random Base62 code (skipping reserved
