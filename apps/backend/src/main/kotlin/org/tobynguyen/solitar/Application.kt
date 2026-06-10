@@ -3,12 +3,15 @@ package org.tobynguyen.solitar
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
+import org.springframework.context.annotation.ImportRuntimeHints
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
+import org.tobynguyen.solitar.config.NativeRuntimeHints
 import org.tobynguyen.solitar.config.properties.AppConfig
 
 @SpringBootApplication
 @EnableConfigurationProperties(AppConfig::class)
+@ImportRuntimeHints(NativeRuntimeHints::class)
 @RestController
 class SolitarApplication {
     @GetMapping fun index(): String = "Hello World"
