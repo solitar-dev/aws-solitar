@@ -6,136 +6,14 @@ settings:
 
 catalogs:
   build:
-    '@nuxt/kit':
-      specifier: ^4.4.4
-      version: 4.4.4
-    '@vitejs/plugin-vue':
-      specifier: ^6.0.6
-      version: 6.0.6
     turbo:
       specifier: ^2.8.14
       version: 2.8.14
-    vite:
-      specifier: ^7.3.1
-      version: 7.3.1
-    wrangler:
-      specifier: ^4.71.0
-      version: 4.71.0
-  frontend:
-    '@astrojs/starlight':
-      specifier: ^0.38.4
-      version: 0.38.4
-    '@iconify-json/lucide':
-      specifier: ^1.2.96
-      version: 1.2.96
-    '@iconify-json/tabler':
-      specifier: ^1.2.33
-      version: 1.2.33
-    '@nuxt/fonts':
-      specifier: ^0.14.0
-      version: 0.14.0
-    '@nuxtjs/color-mode':
-      specifier: ^4.0.0
-      version: 4.0.0
-    '@nuxtjs/i18n':
-      specifier: 10.2.3
-      version: 10.2.3
-    '@regle/core':
-      specifier: ^1.24.0
-      version: 1.24.0
-    '@regle/nuxt':
-      specifier: ^1.24.0
-      version: 1.24.0
-    '@regle/rules':
-      specifier: ^1.24.0
-      version: 1.24.0
-    '@storybook/vue3-vite':
-      specifier: ^10.2.16
-      version: 10.2.16
-    '@takumi-rs/core':
-      specifier: ^0.69.5
-      version: 0.69.5
-    '@takumi-rs/wasm':
-      specifier: ^0.69.5
-      version: 0.69.5
-    '@unocss/nuxt':
-      specifier: ^66.6.8
-      version: 66.6.8
-    '@vueuse/core':
-      specifier: ^14.3.0
-      version: 14.3.0
-    '@vueuse/integrations':
-      specifier: ^14.3.0
-      version: 14.3.0
-    '@vueuse/nuxt':
-      specifier: ^14.3.0
-      version: 14.3.0
-    arktype:
-      specifier: ^2.2.0
-      version: 2.2.0
-    astro:
-      specifier: ^6.2.1
-      version: 6.2.1
-    dayjs:
-      specifier: ^1.11.20
-      version: 1.11.20
-    nuxt:
-      specifier: ^4.4.4
-      version: 4.4.4
-    nuxt-og-image:
-      specifier: 6.0.0-beta.42
-      version: 6.0.0-beta.42
-    qrcode:
-      specifier: ^1.5.4
-      version: 1.5.4
-    sb-addon-vue-csf:
-      specifier: ^0.0.2
-      version: 0.0.2
-    sharp:
-      specifier: ^0.34.5
-      version: 0.34.5
-    storybook:
-      specifier: ^10.2.16
-      version: 10.2.16
-    ufo:
-      specifier: ^1.6.4
-      version: 1.6.4
-    unocss:
-      specifier: ^66.6.8
-      version: 66.6.8
-    vue:
-      specifier: ^3.5.33
-      version: 3.5.33
-    vue-router:
-      specifier: ^4.6.4
-      version: 4.6.4
-    vue-sonner:
-      specifier: ^2.0.9
-      version: 2.0.9
   lint:
     oxfmt:
       specifier: ^0.36.0
       version: 0.36.0
-    oxlint:
-      specifier: ^1.62.0
-      version: 1.62.0
-    oxlint-tsgolint:
-      specifier: ^0.16.0
-      version: 0.16.0
-    stylelint:
-      specifier: ^17.9.1
-      version: 17.9.1
-    stylelint-config-standard:
-      specifier: ^40.0.0
-      version: 40.0.0
-  script:
-    lefthook:
-      specifier: ^2.1.6
-      version: 2.1.6
   types:
-    '@vue/tsconfig':
-      specifier: ^0.9.1
-      version: 0.9.1
     typescript:
       specifier: ^5.9.3
       version: 5.9.3
@@ -144,9 +22,6 @@ importers:
 
   .:
     devDependencies:
-      lefthook:
-        specifier: catalog:script
-        version: 2.1.6
       oxfmt:
         specifier: catalog:lint
         version: 0.36.0
@@ -265,6 +140,8 @@ importers:
       wrangler:
         specifier: catalog:build
         version: 4.71.0
+
+  apps/kgs: {}
 
   packages/assets:
     devDependencies:
@@ -5518,60 +5395,6 @@ packages:
   lazystream@1.0.1:
     resolution: {integrity: sha512-b94GiNHQNy6JNTrt5w6zNyffMrNkXZb3KTkCZJb2V1xaEGCk093vkZ2jk3tpaeP33/OiXC+WvK9AxUebnf5nbw==}
     engines: {node: '>= 0.6.3'}
-
-  lefthook-darwin-arm64@2.1.6:
-    resolution: {integrity: sha512-hyB7eeiX78BS66f70byTJacDLC/xV1vgMv9n+idFUsrM7J3Udd/ag9Ag5NP3t0eN0EqQqAtrNnt35EH01lxnRQ==}
-    cpu: [arm64]
-    os: [darwin]
-
-  lefthook-darwin-x64@2.1.6:
-    resolution: {integrity: sha512-5Ka6cFxiH83krt+OMRQtmS6zqoZR5SLXSudLjTbZA1c3ZqF0+dqkeb4XcB6plx6WR0GFizabuc6Bi3iXPIe1eQ==}
-    cpu: [x64]
-    os: [darwin]
-
-  lefthook-freebsd-arm64@2.1.6:
-    resolution: {integrity: sha512-VswyOg5CVN3rMaOJ2HtnkltiMKgFHW/wouWxXsV8RxSa4tgWOKxM0EmSXi8qc2jX+LRga6B0uOY6toXS01zWxA==}
-    cpu: [arm64]
-    os: [freebsd]
-
-  lefthook-freebsd-x64@2.1.6:
-    resolution: {integrity: sha512-vXsCUFYuVwrVWwcypB7Zt2Hf+5pl1V1la7ZfvGYZaTRURu0zF/XUnMF/nOz/PebGv0f4x/iOWXWwP7E42xRWsg==}
-    cpu: [x64]
-    os: [freebsd]
-
-  lefthook-linux-arm64@2.1.6:
-    resolution: {integrity: sha512-WDJiQhJdZOvKORZd+kF/ms2l6NSsXzdA9ahflyr65V90AC4jES223W8VtEMbGPUtHuGWMEZ/v/XvwlWv0Ioz9g==}
-    cpu: [arm64]
-    os: [linux]
-
-  lefthook-linux-x64@2.1.6:
-    resolution: {integrity: sha512-C18nCd7nTX1AVL4TcvwMmLAO1VI1OuGluIOTjiPkBQ746Ls1HhL5rl//jMPACmT28YmxIQJ2ZcLPNmhvEVBZvw==}
-    cpu: [x64]
-    os: [linux]
-
-  lefthook-openbsd-arm64@2.1.6:
-    resolution: {integrity: sha512-mZOMxM8HiPxVFXDO3PtCUbH4GB8rkveXhsgXF27oAZTYVzQ3gO9vT6r/pxit6msqRXz3fvcwimLVJgb8eRsa8A==}
-    cpu: [arm64]
-    os: [openbsd]
-
-  lefthook-openbsd-x64@2.1.6:
-    resolution: {integrity: sha512-sG9ALLZSnnMOfXu+B7SmxFhJhuoAh4bqi5En5aaHJET48TqrLOcWWZuH+7ArFM6gr/U5KfSUvdmHFmY8WqCcIg==}
-    cpu: [x64]
-    os: [openbsd]
-
-  lefthook-windows-arm64@2.1.6:
-    resolution: {integrity: sha512-lD8yFWY4Csuljd0Rqs7EQaySC0VvDf7V3rN1FhRMUISTRDHutebIom1Loc8ckQPvKYGC6mftT9k0GvipsS+Brw==}
-    cpu: [arm64]
-    os: [win32]
-
-  lefthook-windows-x64@2.1.6:
-    resolution: {integrity: sha512-q4z2n3xucLscoWiyMwFViEj3N8MDSkPulMwcJYuCYFHoPhP1h+icqNu7QRLGYj6AnVrCQweiUJY3Tb2X+GbD/A==}
-    cpu: [x64]
-    os: [win32]
-
-  lefthook@2.1.6:
-    resolution: {integrity: sha512-w9sBoR0mdN+kJc3SB85VzpiAAl451/rxdCRcZlwW71QLjkeH3EBQFgc4VMj5apePychYDHAlqEWTB8J8JK/j1Q==}
-    hasBin: true
 
   levn@0.4.1:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
@@ -13532,49 +13355,6 @@ snapshots:
   lazystream@1.0.1:
     dependencies:
       readable-stream: 2.3.8
-
-  lefthook-darwin-arm64@2.1.6:
-    optional: true
-
-  lefthook-darwin-x64@2.1.6:
-    optional: true
-
-  lefthook-freebsd-arm64@2.1.6:
-    optional: true
-
-  lefthook-freebsd-x64@2.1.6:
-    optional: true
-
-  lefthook-linux-arm64@2.1.6:
-    optional: true
-
-  lefthook-linux-x64@2.1.6:
-    optional: true
-
-  lefthook-openbsd-arm64@2.1.6:
-    optional: true
-
-  lefthook-openbsd-x64@2.1.6:
-    optional: true
-
-  lefthook-windows-arm64@2.1.6:
-    optional: true
-
-  lefthook-windows-x64@2.1.6:
-    optional: true
-
-  lefthook@2.1.6:
-    optionalDependencies:
-      lefthook-darwin-arm64: 2.1.6
-      lefthook-darwin-x64: 2.1.6
-      lefthook-freebsd-arm64: 2.1.6
-      lefthook-freebsd-x64: 2.1.6
-      lefthook-linux-arm64: 2.1.6
-      lefthook-linux-x64: 2.1.6
-      lefthook-openbsd-arm64: 2.1.6
-      lefthook-openbsd-x64: 2.1.6
-      lefthook-windows-arm64: 2.1.6
-      lefthook-windows-x64: 2.1.6
 
   levn@0.4.1:
     dependencies:
