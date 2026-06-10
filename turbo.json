@@ -19,16 +19,23 @@
 			"env": [
 				// Backend
 				"SPRING_PROFILES_ACTIVE",
-				"SERVER_PORT",
-				"DATABASE_URL",
-				"DATABASE_USERNAME",
-				"DATABASE_PASSWORD",
-				"REDIS_URL",
+				"BACKEND_SERVER_PORT",
+				"CASSANDRA_URL",
+				"CASSANDRA_KEYSPACE",
+				"CASSANDRA_LOCAL_DATACENTER",
+				"BACKEND_REDIS_URL",
+				"RABBITMQ_URL",
+				"RABBITMQ_PORT",
+				"RABBITMQ_USER",
+				"RABBITMQ_PASS",
 				// Frontend
 				"PUBLIC_API_BASE_URL",
 				"SITE_URL",
 				"SITE_NAME",
-				"SITE_ENV"
+				"SITE_ENV",
+				// KGS
+				"KGS_SERVER_PORT",
+				"KGS_REDIS_URL"
 			]
 		},
 		"test": {
