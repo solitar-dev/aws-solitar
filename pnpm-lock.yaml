@@ -294,6 +294,9 @@ importers:
       '@storybook/vue3-vite':
         specifier: catalog:frontend
         version: 10.2.16(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.5.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.0)(typescript@5.9.3)(yaml@2.8.2))(esbuild@0.28.0)(rollup@4.60.2)(storybook@10.2.16(@testing-library/dom@10.4.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(vue@3.5.33(typescript@5.9.3))(webpack@5.105.2(esbuild@0.28.0))
+      oxlint:
+        specifier: ^1.67.0
+        version: 1.67.0(oxlint-tsgolint@0.23.0)(vite-plus@0.1.24(@types/node@25.5.0)(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.5.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.0)(typescript@5.9.3)(yaml@2.8.2))(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.0)(typescript@5.9.3)(yaml@2.8.2))
       sb-addon-vue-csf:
         specifier: catalog:frontend
         version: 0.0.2(@storybook/vue3@10.2.16(storybook@10.2.16(@testing-library/dom@10.4.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(vue@3.5.33(typescript@5.9.3)))(@vitejs/plugin-vue@6.0.6(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.5.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.0)(typescript@5.9.3)(yaml@2.8.2))(vue@3.5.33(typescript@5.9.3)))(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.5.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.0)(typescript@5.9.3)(yaml@2.8.2))(storybook@10.2.16(@testing-library/dom@10.4.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(vue@3.5.33(typescript@5.9.3))
