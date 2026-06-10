@@ -252,8 +252,6 @@ importers:
         specifier: catalog:build
         version: 4.71.0
 
-  apps/kgs: {}
-
   packages/assets:
     devDependencies:
       stylelint:

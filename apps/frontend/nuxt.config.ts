@@ -54,12 +54,9 @@ export default defineNuxtConfig({
 			{ code: "en", name: "English", file: "en.json" },
 			{ code: "vi", name: "Tiếng Việt", file: "vi.json" },
 		],
-		// Detect browser language on first visit, then persist the choice.
-		detectBrowserLanguage: {
-			useCookie: true,
-			cookieKey: "i18n_redirected",
-			redirectOn: "root",
-		},
+		// SSG-safe: browser detection bakes the payload at build time in one locale (broken under
+		// static export). Locale is switched manually in LanguageSetting.vue via setLocale.
+		detectBrowserLanguage: false,
 	},
 	// Runtime
 	runtimeConfig: {
@@ -72,12 +69,19 @@ export default defineNuxtConfig({
 			},
 		},
 	},
-	// Build
+	// OG images: zero-runtime so Satori/Playwright stay out of the static bundle.
+	ogImage: {
+		zeroRuntime: true,
+	},
+	// Build: static export via `nuxt generate` -> .output/public (flat .html, autoSubfolderIndex
+	// false). No SSR preset; the old aws-amplify preset is removed in the AWS-native migration.
 	nitro: {
 		prerender: {
 			autoSubfolderIndex: false,
+			// Don't let a flaky OG-image renderer abort the whole static build; social previews
+			// degrade gracefully instead of failing the deploy.
+			failOnError: false,
 		},
-		preset: "aws-amplify",
 	},
 
 	// Development
