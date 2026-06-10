@@ -77,10 +77,7 @@ export default defineNuxtConfig({
 		prerender: {
 			autoSubfolderIndex: false,
 		},
-		preset: "cloudflare-module",
-		cloudflare: {
-			nodeCompat: true,
-		},
+		preset: "aws-amplify",
 	},
 
 	// Development
