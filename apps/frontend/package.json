@@ -8,8 +8,8 @@
 		"generate": "nuxt generate",
 		"preview": "nuxt preview",
 		"postinstall": "nuxt prepare",
-		"lint": "oxlint --type-aware --type-check",
-		"lint:fix": "oxlint --fix"
+		"lint": "vp lint --type-aware --type-check",
+		"lint:fix": "vp lint --fix"
 	},
 	"dependencies": {
 		"@nuxt/fonts": "catalog:frontend",
@@ -39,9 +39,8 @@
 		"@vueuse/core": "catalog:frontend",
 		"@vueuse/nuxt": "catalog:frontend",
 		"nuxt-og-image": "catalog:frontend",
-		"oxlint": "catalog:lint",
-		"oxlint-tsgolint": "catalog:lint",
 		"unocss": "catalog:frontend",
+		"vite-plus": "catalog:",
 		"wrangler": "catalog:build"
 	}
 }

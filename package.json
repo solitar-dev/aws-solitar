@@ -9,12 +9,13 @@
 		"lint:fix": "turbo run lint:fix",
 		"test": "turbo run test",
 		"ci": "turbo run lint test --continue",
-		"format": "oxfmt"
+		"format": "vp fmt",
+		"prepare": "vp config"
 	},
 	"devDependencies": {
-		"oxfmt": "catalog:lint",
 		"turbo": "catalog:build",
-		"typescript": "catalog:types"
+		"typescript": "catalog:types",
+		"vite-plus": "catalog:"
 	},
 	"engines": {
 		"node": ">=22"

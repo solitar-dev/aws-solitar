@@ -15,12 +15,9 @@ catalogs:
     turbo: ^2.8.14
     "@nuxt/kit": ^4.4.4
     "@vitejs/plugin-vue": "^6.0.6"
-    "vite": "^7.3.1"
+    "vite": npm:@voidzero-dev/vite-plus-core@latest
     "wrangler": "^4.71.0"
   lint:
-    oxlint: ^1.62.0
-    oxlint-tsgolint: ^0.16.0
-    oxfmt: ^0.36.0
     "stylelint": "^17.9.1"
     "stylelint-config-standard": "^40.0.0"
   script:
@@ -59,3 +56,17 @@ catalogs:
   types:
     typescript: ^5.9.3
     "@vue/tsconfig": "^0.9.1"
+catalog:
+  vite: npm:@voidzero-dev/vite-plus-core@latest
+  vitest: npm:@voidzero-dev/vite-plus-test@latest
+  vite-plus: latest
+overrides:
+  vite: "catalog:"
+  vitest: "catalog:"
+peerDependencyRules:
+  allowAny:
+    - vite
+    - vitest
+  allowedVersions:
+    vite: "*"
+    vitest: "*"

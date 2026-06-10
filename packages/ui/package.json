@@ -19,8 +19,8 @@
 		}
 	},
 	"scripts": {
-		"lint": "oxlint --type-aware --type-check",
-		"lint:fix": "oxlint --fix",
+		"lint": "vp lint --type-aware --type-check",
+		"lint:fix": "vp lint --fix",
 		"storybook": "storybook dev -p 6006",
 		"build-storybook": "storybook build"
 	},
@@ -33,12 +33,11 @@
 	"devDependencies": {
 		"@iconify-json/lucide": "catalog:frontend",
 		"@storybook/vue3-vite": "catalog:frontend",
-		"oxlint": "catalog:lint",
-		"oxlint-tsgolint": "catalog:lint",
 		"sb-addon-vue-csf": "catalog:frontend",
 		"storybook": "catalog:frontend",
 		"unocss": "catalog:frontend",
 		"vite": "catalog:build",
+		"vite-plus": "catalog:",
 		"vue": "catalog:frontend"
 	}
 }

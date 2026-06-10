@@ -12,13 +12,12 @@
 		"./uno": "./uno/uno-preset.ts"
 	},
 	"scripts": {
-		"lint": "oxlint --type-aware --type-check",
-		"lint:fix": "oxlint --fix"
+		"lint": "vp lint --type-aware --type-check",
+		"lint:fix": "vp lint --fix"
 	},
 	"devDependencies": {
 		"@vue/tsconfig": "catalog:types",
-		"oxlint": "catalog:lint",
-		"oxlint-tsgolint": "catalog:lint",
-		"unocss": "catalog:frontend"
+		"unocss": "catalog:frontend",
+		"vite-plus": "catalog:"
 	}
 }

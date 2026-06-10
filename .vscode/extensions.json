@@ -5,6 +5,7 @@
 		"Vue.volar",
 		"antfu.unocss",
 		"arktypeio.arkdark",
-		"antfu.pnpm-catalog-lens"
+		"antfu.pnpm-catalog-lens",
+		"VoidZero.vite-plus-extension-pack"
 	]
 }

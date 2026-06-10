@@ -1,6 +1,6 @@
 import vue from "@vitejs/plugin-vue";
 import UnoCSS from "unocss/vite";
-import { defineConfig } from "vite";
+import { defineConfig } from "vite-plus";
 import path from "node:path";
 
 export default defineConfig({
