@@ -2,4 +2,4 @@
 java = "graalvm-community-25"
 
 [env]
-_.file = ["apps/backend/.env.local", "apps/frontend/.env.local"]
+_.file = ["apps/backend/.env.local", "apps/kgs/.env.local", "apps/frontend/.env.local"]

@@ -10,35 +10,27 @@ import org.springframework.data.redis.cache.RedisCacheManager
 import org.springframework.data.redis.connection.RedisConnectionFactory
 import org.springframework.data.redis.serializer.JacksonJsonRedisSerializer
 import org.springframework.data.redis.serializer.RedisSerializationContext
-import org.tobynguyen.solitar.model.dto.StatisticDto
-import org.tobynguyen.solitar.model.entity.UrlEntity
+import org.tobynguyen.solitar.model.dto.UrlForwardResponseDto
 
 @Configuration
 @EnableCaching
 class RedisConfig {
     @Bean
     fun cacheManager(connectionFactory: RedisConnectionFactory): CacheManager {
-        val urlEntitySerializer = JacksonJsonRedisSerializer(UrlEntity::class.java)
-        val statisticDtoSerializer = JacksonJsonRedisSerializer(StatisticDto::class.java)
+        val urlForwardResponseSerializer =
+            JacksonJsonRedisSerializer(UrlForwardResponseDto::class.java)
 
-        val urlEntityConfig =
+        val urlForwardResponseConfig =
             RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofHours(48))
-                .disableCachingNullValues()
-                .serializeValuesWith(
-                    RedisSerializationContext.SerializationPair.fromSerializer(urlEntitySerializer)
-                )
-        val statisticConfig =
-            RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofMinutes(30))
+                .entryTtl(Duration.ofHours(24))
                 .disableCachingNullValues()
                 .serializeValuesWith(
                     RedisSerializationContext.SerializationPair.fromSerializer(
-                        statisticDtoSerializer
+                        urlForwardResponseSerializer
                     )
                 )
 
-        val config = mapOf("urlEntities" to urlEntityConfig, "statistics" to statisticConfig)
+        val config = mapOf("urlForwardResponses" to urlForwardResponseConfig)
 
         return RedisCacheManager.builder(connectionFactory)
             .withInitialCacheConfigurations(config)

@@ -4,9 +4,10 @@ import java.time.Instant
 import org.springframework.data.cassandra.core.mapping.PrimaryKey
 import org.springframework.data.cassandra.core.mapping.Table
 
-@Table("urls")
-data class UrlEntity(
-    @PrimaryKey var id: String,
-    var originalUrl: String,
-    var createdAt: Instant = Instant.now(),
+@Table("statistics")
+data class StatisticsEntity(
+    @PrimaryKey val id: String = "global",
+    var totalLinks: Long = 0,
+    var totalClicks: Long = 0,
+    var updatedAt: Instant = Instant.now(),
 )

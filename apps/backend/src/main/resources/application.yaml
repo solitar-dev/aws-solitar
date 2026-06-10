@@ -3,23 +3,25 @@ spring:
     name: solitar
   main:
     banner-mode: off
-  datasource:
-    url: ${DATABASE_URL}
-    username: ${DATABASE_USERNAME}
-    password: ${DATABASE_PASSWORD}
-    driver-class-name: org.postgresql.Driver
-  data:
-    redis:
-      url: ${REDIS_URL}
-  flyway:
-    enabled: true
-    locations: classpath:db/migration
-  jpa:
-    hibernate:
-      ddl-auto: validate
   profiles:
     default: prod
+  data:
+    redis:
+      url: ${BACKEND_REDIS_URL}
+  cassandra:
+    contact-points: ${CASSANDRA_CONTACT_POINTS:localhost:9042}
+    keyspace-name: ${CASSANDRA_KEYSPACE:solitar}
+    local-datacenter: ${CASSANDRA_LOCAL_DATACENTER:datacenter1}
+    schema-action: create_if_not_exists
+  rabbitmq:
+    host: ${RABBITMQ_URL:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER}
+    password: ${RABBITMQ_PASS}
 
 server:
   forward-headers-strategy: framework
-  port: ${SERVER_PORT:8080}
+  port: ${BACKEND_SERVER_PORT:8080}
+
+app:
+  kgs-endpoint: http://localhost:8081

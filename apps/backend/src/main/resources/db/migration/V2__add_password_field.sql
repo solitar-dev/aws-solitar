@@ -1,1 +1,0 @@
-ALTER TABLE urls ADD COLUMN password TEXT;

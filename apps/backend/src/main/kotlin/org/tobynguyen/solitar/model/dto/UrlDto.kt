@@ -1,10 +1,7 @@
 package org.tobynguyen.solitar.model.dto
 
-import jakarta.validation.constraints.Future
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Pattern
-import jakarta.validation.constraints.Size
-import java.time.Instant
 
 data class UrlCreateDto(
     @field:NotBlank(message = "URL is required")
@@ -13,27 +10,11 @@ data class UrlCreateDto(
         regexp =
             "^https?://(?:www\\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b[-a-zA-Z0-9()@:%_+.~#?&/=]*$",
     )
-    val url: String,
-    @field:Future(message = "Expiration time must be in the future") val expireTime: Instant?,
-    @field:Size(message = "Alias must be longer than 7 characters", min = 7)
-    @field:Size(message = "Alias cannot exceed 255 characters", max = 255)
-    @field:Pattern(
-        message = "Alias can only contain letters, numbers, dashes, and underscores",
-        regexp = "^[a-zA-Z0-9_-]*$",
-    )
-    val alias: String?,
-    @field:Size(message = "Password must be at least 3 characters", min = 3)
-    @field:Size(message = "Password cannot exceed 255 characters", max = 255)
-    val password: String?,
+    val url: String
 )
 
 data class UrlResponseDto(val originalUrl: String, val shortCode: String)
 
 data class UrlForwardResponseDto(val originalUrl: String)
 
-data class UrlForwardDto(
-    @field:NotBlank(message = "Short code is required") val shortCode: String,
-    @field:Size(message = "Password must be at least 3 characters", min = 3)
-    @field:Size(message = "Password cannot exceed 255 characters", max = 255)
-    val password: String?,
-)
+data class UrlForwardDto(@field:NotBlank(message = "Short code is required") val shortCode: String)

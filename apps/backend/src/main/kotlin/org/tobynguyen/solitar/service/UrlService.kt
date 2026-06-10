@@ -1,153 +1,51 @@
 package org.tobynguyen.solitar.service
 
-import java.time.Instant
-import org.springframework.security.crypto.argon2.Argon2PasswordEncoder
+import org.springframework.cache.annotation.Cacheable
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
-import org.sqids.Sqids
-import org.tobynguyen.solitar.exception.IncorrectPasswordException
-import org.tobynguyen.solitar.exception.PasswordProtectedException
-import org.tobynguyen.solitar.exception.ShortCodeConflictException
-import org.tobynguyen.solitar.exception.UrlDisabledException
-import org.tobynguyen.solitar.exception.UrlExpiredException
+import org.springframework.web.client.RestClient
+import org.springframework.web.client.body
 import org.tobynguyen.solitar.exception.UrlNotFoundException
 import org.tobynguyen.solitar.mapper.toResponseDto
 import org.tobynguyen.solitar.model.dto.UrlCreateDto
 import org.tobynguyen.solitar.model.dto.UrlForwardDto
 import org.tobynguyen.solitar.model.dto.UrlForwardResponseDto
 import org.tobynguyen.solitar.model.entity.UrlEntity
+import org.tobynguyen.solitar.model.event.LinkCreatedEvent
+import org.tobynguyen.solitar.model.event.LinkForwardedEvent
 import org.tobynguyen.solitar.repository.UrlRepository
 
 @Service
 class UrlService(
     private val urlRepository: UrlRepository,
-    private val sqids: Sqids,
-    private val argon2Encoder: Argon2PasswordEncoder,
+    private val kgsRestClient: RestClient,
+    private val rabbitMQPublisher: RabbitMQPublisher,
 ) {
 
-    @Transactional
+    @Cacheable(value = ["urlForwardResponses"], key = "#data.shortCode")
     fun getOriginalUrl(data: UrlForwardDto): UrlForwardResponseDto {
-        val (shortCode, password) = data
+        val (shortCode) = data
 
         val urlEntity =
-            urlRepository.findByShortCode(shortCode)
+            urlRepository.findByIdOrNull(shortCode)
                 ?: throw UrlNotFoundException("Short URL with code '$shortCode' not found.")
 
-        if (urlEntity.isDisabled) throw UrlDisabledException()
+        rabbitMQPublisher.publishLinkForwarded(LinkForwardedEvent(shortCode = shortCode))
 
-        if (urlEntity.expiresAt != null && urlEntity.expiresAt!!.isBefore(Instant.now()))
-            throw UrlExpiredException()
-
-        urlRepository.incrementClickCount(urlEntity.id)
-
-        return if (urlEntity.password == null) {
-            UrlForwardResponseDto(urlEntity.toResponseDto().originalUrl)
-        } else {
-            if (password == null) throw PasswordProtectedException()
-
-            if (argon2Encoder.matches(password, urlEntity.password)) {
-                UrlForwardResponseDto(urlEntity.toResponseDto().originalUrl)
-            } else {
-                throw IncorrectPasswordException()
-            }
-        }
+        return UrlForwardResponseDto(urlEntity.toResponseDto().originalUrl)
     }
 
-    @Transactional
     fun createUrl(data: UrlCreateDto): UrlEntity {
-        val (url, expireTime, alias, password) = data
+        val (url) = data
 
-        val hashedPassword = password?.let { argon2Encoder.encode(it) }
+        val shortCode = kgsRestClient.get().uri("key").retrieve().body<String>()!!
 
-        if (alias != null) {
-            val existing = urlRepository.findByShortCode(alias)
+        val entity = urlRepository.save(UrlEntity(id = shortCode, originalUrl = url))
 
-            return if (existing != null) {
-                val isPasswordMatch =
-                    if (password == null && existing.password == null) {
-                        true
-                    } else if (password != null && existing.password != null) {
-                        argon2Encoder.matches(password, existing.password)
-                    } else {
-                        false
-                    }
+        rabbitMQPublisher.publishLinkCreated(
+            LinkCreatedEvent(shortCode = shortCode, originalUrl = url)
+        )
 
-                if (
-                    existing.originalUrl == url &&
-                        existing.expiresAt == expireTime &&
-                        isPasswordMatch
-                ) {
-                    existing
-                } else {
-                    throw ShortCodeConflictException()
-                }
-            } else {
-                createAndSaveUrl(url, alias, expireTime, hashedPassword)
-            }
-        } else {
-            val existingList =
-                if (expireTime == null) {
-                    urlRepository.findByOriginalUrlAndExpiresAtIsNullAndHasAliasFalse(url)
-                } else {
-                    urlRepository.findByOriginalUrlAndExpiresAtAndHasAliasFalse(url, expireTime)
-                }
-
-            if (existingList.isEmpty()) {
-                return createAndSaveUrl(url, null, expireTime, hashedPassword)
-            }
-
-            existingList.forEach {
-                val isPasswordMatch =
-                    if (password == null && it.password == null) {
-                        true
-                    } else if (password != null && it.password != null) {
-                        argon2Encoder.matches(password, it.password)
-                    } else {
-                        false
-                    }
-
-                if (isPasswordMatch) {
-                    return it
-                }
-            }
-
-            return createAndSaveUrl(url, null, expireTime, hashedPassword)
-        }
-    }
-
-    fun createAndSaveUrl(
-        url: String,
-        alias: String?,
-        expireTime: Instant?,
-        hashedPassword: String?,
-    ): UrlEntity {
-        if (alias != null) {
-            val entity =
-                UrlEntity(
-                    shortCode = alias,
-                    originalUrl = url,
-                    expiresAt = expireTime,
-                    hasAlias = true,
-                    password = hashedPassword,
-                )
-
-            return urlRepository.saveAndFlush(entity)
-        } else {
-            val entity =
-                UrlEntity(
-                    shortCode = "",
-                    originalUrl = url,
-                    expiresAt = expireTime,
-                    password = hashedPassword,
-                )
-
-            val savedEntity = urlRepository.save(entity)
-
-            val generatedCode = sqids.encode(listOf(savedEntity.id))
-
-            savedEntity.shortCode = generatedCode
-
-            return savedEntity
-        }
+        return entity
     }
 }

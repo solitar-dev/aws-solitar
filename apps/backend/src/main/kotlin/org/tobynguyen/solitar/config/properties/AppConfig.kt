@@ -6,6 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 data class AppConfig(
     val cors: CorsConfig = CorsConfig(),
     val rateLimiter: RateLimiterConfig = RateLimiterConfig(),
+    val kgsEndpoint: String = "http://localhost:8081",
 ) {
     data class CorsConfig(val allowedOrigins: List<String> = emptyList())
 

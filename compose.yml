@@ -1,20 +1,5 @@
 name: solitar
 services:
-  cockroach_db:
-    image: cockroachdb/cockroach:v25.4.8
-    container_name: solitar-cockroach
-    volumes:
-      - db-data:/cockroach/cockroach-data
-    ports:
-      - "127.0.0.1:26257:26257"
-      - "127.0.0.1:26258:26258"
-    command: start-single-node --insecure --http-addr=0.0.0.0:26258
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:26258/health?ready=1"]
-      interval: 3s
-      timeout: 5s
-      retries: 3
-
   solitar:
     build:
       context: .
@@ -27,7 +12,7 @@ services:
     volumes:
       - solitar-data:/tmp/solitar
     depends_on:
-      cockroach_db:
+      scylla_db:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -46,7 +31,56 @@ services:
       timeout: 5s
       retries: 3
 
+  kgs_db:
+    image: docker.dragonflydb.io/dragonflydb/dragonfly
+    container_name: kgs-db
+    restart: on-failure
+    ports:
+      - "127.0.0.1:6380:6379"
+    volumes:
+      - kgs-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "PING"]
+      interval: 3s
+      timeout: 5s
+      retries: 3
+    command: >
+      dragonfly
+      --logtostderr
+      --dir my-snapshot-dir
+      --dbfilename my-snapshot-file-{timestamp}
+      --snapshot_cron "*/5 * * * *"
+
+  scylla_db:
+    image: scylladb/scylla
+    container_name: scylla-db
+    restart: on-failure
+    ports:
+      - "127.0.0.1:9042:9042"
+    volumes:
+      - scylla-data:/var/lib/scylla
+    command: >
+      --memory 2G
+      --smp 1
+      --overprovisioned 1
+      --developer-mode 1
+
+  rabbitmq:
+    image: rabbitmq:4.3.1-management-alpine
+    container_name: solitar-rabbitmq
+    restart: on-failure
+    ports:
+        - "127.0.0.1:5672:5672"
+        - "127.0.0.1:15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    environment:
+        RABBITMQ_DEFAULT_USER: solitar
+        RABBITMQ_DEFAULT_PASS: solitar
+
 volumes:
-  db-data:
   solitar-data:
   redis-data:
+  kgs-data:
+  scylla-data:
+  rabbitmq-data:
