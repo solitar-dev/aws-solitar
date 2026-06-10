@@ -113,7 +113,7 @@ async function onSubmit() {
 			</div>
 			<p class="text-red-900">{{ r$.longUrl.$errors[0] }}</p>
 		</div>
-		<div class="flex flex-col gap-1">
+		<!-- <div class="flex flex-col gap-1">
 			<label for="alias">Alias</label>
 			<div
 				class="relative flex items-center border border-border rounded-lg w-full max-w-2xl group focus-within:(border-border-active) bg-bg-muted">
@@ -183,6 +183,7 @@ async function onSubmit() {
 				</div>
 			</div>
 		</div>
+		-->
 		<button class="w-full btn-primary p-2 flex justify-center items-center gap-1" type="submit">
 			<i class="i-tabler-north-star"></i>
 			Shorten
