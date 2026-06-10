@@ -1,0 +1,9 @@
+# Copy to terraform.tfvars (gitignored) and adjust. Only `github_repo` is required.
+region         = "us-east-1"
+project        = "solitar"
+domain_name    = "solitar.link"
+alert_email    = "you@example.com"
+container_port = 8080
+
+# REQUIRED — scopes the CI/CD OIDC trust to this repo's workflows. Format: "owner/name".
+github_repo = "your-org/your-repo"
