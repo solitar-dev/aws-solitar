@@ -1,0 +1,38 @@
+{
+	"$schema": "https://turborepo.dev/schema.json",
+	"ui": "tui",
+	"tasks": {
+		"build": {
+			"dependsOn": ["^build"],
+			"inputs": ["$TURBO_DEFAULT$", ".env*"],
+			"outputs": [".output/**", "build/**", "dist/**"]
+		},
+		"lint": {
+			"dependsOn": ["^lint"]
+		},
+		"lint:fix": {
+			"dependsOn": ["^lint:fix"]
+		},
+		"dev": {
+			"cache": false,
+			"persistent": true,
+			"env": [
+				// Backend
+				"SPRING_PROFILES_ACTIVE",
+				"SERVER_PORT",
+				"DATABASE_URL",
+				"DATABASE_USERNAME",
+				"DATABASE_PASSWORD",
+				"REDIS_URL",
+				// Frontend
+				"PUBLIC_API_BASE_URL",
+				"SITE_URL",
+				"SITE_NAME",
+				"SITE_ENV"
+			]
+		},
+		"test": {
+			"dependsOn": ["^test"]
+		}
+	}
+}

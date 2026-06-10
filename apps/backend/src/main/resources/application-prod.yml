@@ -1,0 +1,14 @@
+spring:
+  application:
+    version: 1.0.0-prod
+  flyway:
+    baseline-version: 1
+    baseline-on-migrate: true
+
+app:
+  cors:
+    allowed-origins:
+      - "https://solitar.link"
+  rate-limiter:
+    capacity: 1000
+    refill-period-in-seconds: 3600

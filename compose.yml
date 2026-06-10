@@ -1,0 +1,52 @@
+name: solitar
+services:
+  cockroach_db:
+    image: cockroachdb/cockroach:v25.4.8
+    container_name: solitar-cockroach
+    volumes:
+      - db-data:/cockroach/cockroach-data
+    ports:
+      - "127.0.0.1:26257:26257"
+      - "127.0.0.1:26258:26258"
+    command: start-single-node --insecure --http-addr=0.0.0.0:26258
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:26258/health?ready=1"]
+      interval: 3s
+      timeout: 5s
+      retries: 3
+
+  solitar:
+    build:
+      context: .
+      dockerfile: ./apps/backend/Dockerfile
+    container_name: solitar
+    ports:
+      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:8081:8081"
+    env_file: ./apps/backend/.env.docker-compose
+    volumes:
+      - solitar-data:/tmp/solitar
+    depends_on:
+      cockroach_db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  redis:
+    image: docker.dragonflydb.io/dragonflydb/dragonfly
+    container_name: solitar-redis
+    restart: on-failure
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "PING"]
+      interval: 3s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  db-data:
+  solitar-data:
+  redis-data:

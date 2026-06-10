@@ -1,0 +1,30 @@
+# Dependencies
+node_modules
+.gradle
+!gradle/wrapper/gradle-wrapper.jar
+
+# Local env files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Turbo
+.turbo
+
+# Build Outputs
+.output
+build
+.nuxt
+.kotlin
+.wrangler
+.data
+dist
+*storybook.log
+storybook-static
+
+# IntelliJ
+.idea/
+
+# Astro
+.astro

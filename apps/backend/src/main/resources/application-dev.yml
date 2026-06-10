@@ -1,0 +1,14 @@
+spring:
+  application:
+    version: 1.0.0-dev
+  flyway:
+    clean-disabled: false
+
+app:
+  cors:
+    allowed-origins:
+      - "http://localhost:3000"
+      - "https://staging.solitar.link"
+  rate-limiter:
+    capacity: 10
+    refill-period-in-seconds: 30

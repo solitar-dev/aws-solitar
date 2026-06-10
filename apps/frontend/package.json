@@ -1,0 +1,47 @@
+{
+	"name": "@solitar/frontend",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "nuxt build",
+		"dev": "nuxt dev",
+		"generate": "nuxt generate",
+		"preview": "nuxt preview",
+		"postinstall": "nuxt prepare",
+		"lint": "oxlint --type-aware --type-check",
+		"lint:fix": "oxlint --fix"
+	},
+	"dependencies": {
+		"@nuxt/fonts": "catalog:frontend",
+		"@nuxtjs/color-mode": "catalog:frontend",
+		"@nuxtjs/i18n": "catalog:frontend",
+		"@regle/core": "catalog:frontend",
+		"@regle/nuxt": "catalog:frontend",
+		"@regle/rules": "catalog:frontend",
+		"@solitar/assets": "workspace:*",
+		"@solitar/tooling-config": "workspace:*",
+		"@solitar/ui": "workspace:*",
+		"@vueuse/integrations": "catalog:frontend",
+		"arktype": "catalog:frontend",
+		"dayjs": "catalog:frontend",
+		"nuxt": "catalog:frontend",
+		"qrcode": "catalog:frontend",
+		"ufo": "catalog:frontend",
+		"vue": "catalog:frontend",
+		"vue-router": "catalog:frontend",
+		"vue-sonner": "catalog:frontend"
+	},
+	"devDependencies": {
+		"@iconify-json/tabler": "catalog:frontend",
+		"@takumi-rs/core": "catalog:frontend",
+		"@takumi-rs/wasm": "catalog:frontend",
+		"@unocss/nuxt": "catalog:frontend",
+		"@vueuse/core": "catalog:frontend",
+		"@vueuse/nuxt": "catalog:frontend",
+		"nuxt-og-image": "catalog:frontend",
+		"oxlint": "catalog:lint",
+		"oxlint-tsgolint": "catalog:lint",
+		"unocss": "catalog:frontend",
+		"wrangler": "catalog:build"
+	}
+}
