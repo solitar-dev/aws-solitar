@@ -1,41 +1,26 @@
 package org.tobynguyen.solitar.service
 
-import java.time.Instant
-import org.springframework.amqp.rabbit.core.RabbitTemplate
-import org.springframework.data.repository.findByIdOrNull
-import org.springframework.scheduling.annotation.Scheduled
+import io.awspring.cloud.sqs.annotation.SqsListener
 import org.springframework.stereotype.Service
-import org.tobynguyen.solitar.config.RabbitMQConfig
-import org.tobynguyen.solitar.model.entity.StatisticsEntity
+import org.tobynguyen.solitar.messaging.QueueNames
+import org.tobynguyen.solitar.model.event.LinkCreatedEvent
+import org.tobynguyen.solitar.model.event.LinkForwardedEvent
 import org.tobynguyen.solitar.repository.StatisticsRepository
 
+/**
+ * Consumes link events from SQS and applies atomic counter increments. SQS is at-least-once; the
+ * `UpdateItem ADD` increments are commutative so redelivery is safe (may marginally over-count).
+ */
 @Service
-class StatisticsAggregator(
-    private val rabbitTemplate: RabbitTemplate,
-    private val statisticsRepository: StatisticsRepository,
-) {
-    @Scheduled(fixedRate = 5 * 60 * 1000)
-    fun aggregate() {
-        val createdCount = drainQueue(RabbitMQConfig.LINK_CREATED_QUEUE)
-        val forwardedCount = drainQueue(RabbitMQConfig.LINK_FORWARDED_QUEUE)
+class StatisticsAggregator(private val statisticsRepository: StatisticsRepository) {
 
-        if (createdCount == 0L && forwardedCount == 0L) {
-            return
-        }
-
-        val current =
-            statisticsRepository.findByIdOrNull("global") ?: StatisticsEntity(id = "global")
-
-        val updated =
-            current.copy(
-                totalLinks = current.totalLinks + createdCount,
-                totalClicks = current.totalClicks + forwardedCount,
-                updatedAt = Instant.now(),
-            )
-
-        statisticsRepository.save(updated)
+    @SqsListener(QueueNames.LINK_CREATED)
+    fun onLinkCreated(event: LinkCreatedEvent) {
+        statisticsRepository.incrementLinks()
     }
 
-    private fun drainQueue(queueName: String): Long =
-        generateSequence { rabbitTemplate.receive(queueName) }.count().toLong()
+    @SqsListener(QueueNames.LINK_FORWARDED)
+    fun onLinkForwarded(event: LinkForwardedEvent) {
+        statisticsRepository.incrementClicks()
+    }
 }
