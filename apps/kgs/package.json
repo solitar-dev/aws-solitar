@@ -1,0 +1,10 @@
+{
+	"name": "@solitar/kgs",
+	"private": "true",
+	"scripts": {
+		"dev": "./gradlew bootRun",
+		"build": "./gradlew bootJar",
+		"lint": "./gradlew spotlessCheck",
+		"lint:fix": "./gradlew spotlessApply"
+	}
+}
