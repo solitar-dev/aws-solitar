@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm") version "2.3.20"
     kotlin("plugin.spring") version "2.3.20"
-    id("org.springframework.boot") version "4.1.0-RC1"
+    id("org.springframework.boot") version "4.1.0"
     id("io.spring.dependency-management") version "1.1.7"
 
     id("org.graalvm.buildtools.native") version "1.1.0"
@@ -19,6 +19,13 @@ java { toolchain { languageVersion = JavaLanguageVersion.of(25) } }
 
 repositories { mavenCentral() }
 
+dependencyManagement {
+    imports {
+        mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:4.0.2")
+        mavenBom("org.testcontainers:testcontainers-bom:2.0.5")
+    }
+}
+
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webmvc") {
         exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
@@ -29,17 +36,16 @@ dependencies {
     implementation("org.sqids:sqids-kotlin:0.1.1")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-cache")
-    implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation("com.github.ben-manes.caffeine:caffeine")
     implementation("org.springframework.security:spring-security-crypto")
     implementation("org.bouncycastle:bcprov-jdk18on:1.84")
     implementation("io.github.wimdeblauwe:error-handling-spring-boot-starter:5.1.1")
     implementation("com.bucket4j:bucket4j_jdk17-core:8.18.0")
-    implementation("com.bucket4j:bucket4j_jdk17-lettuce:8.18.0")
 
-    implementation("org.springframework.boot:spring-boot-starter-data-cassandra")
-    implementation("org.springframework.boot:spring-boot-starter-cassandra")
-    implementation("org.springframework.boot:spring-boot-starter-amqp")
-    testImplementation("org.springframework.amqp:spring-rabbit-test")
+    // AWS: DynamoDB (Enhanced Client) + SQS via Spring Cloud AWS 4.0.x (Boot 4 / Framework 7)
+    implementation("io.awspring.cloud:spring-cloud-aws-starter-dynamodb")
+    implementation("io.awspring.cloud:spring-cloud-aws-starter-sqs")
+    implementation("software.amazon.awssdk:dynamodb-enhanced")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 
@@ -47,6 +53,9 @@ dependencies {
         exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
     }
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+    testImplementation("org.testcontainers:testcontainers-localstack")
+    testImplementation("org.testcontainers:testcontainers-junit-jupiter")
+    testImplementation("org.awaitility:awaitility")
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
