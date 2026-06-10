@@ -37,3 +37,15 @@ variable "container_port" {
   type        = number
   default     = 8080
 }
+
+variable "health_check_path" {
+  description = "ALB target-group health check path. Backend GET / returns 200 (no Actuator)."
+  type        = string
+  default     = "/"
+}
+
+variable "image_tag" {
+  description = "Container image tag the ECS task definition references. CI overwrites the running task def; TF keeps this as the bootstrap default."
+  type        = string
+  default     = "latest"
+}

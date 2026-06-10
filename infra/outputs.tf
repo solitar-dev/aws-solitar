@@ -65,3 +65,40 @@ output "frontend_bucket_name" {
   description = "Frontend S3 bucket name phase-04 must create (the CI/CD role is scoped to it)."
   value       = local.frontend_bucket_name
 }
+
+# --- phase-04 edge/compute (consumed by P5 deploy + P6 CI) ---
+
+output "route53_zone_id" {
+  description = "Route 53 hosted zone id."
+  value       = aws_route53_zone.main.zone_id
+}
+
+output "route53_nameservers" {
+  description = "Set these as the domain's nameservers at the registrar (DNS cutover, before ACM validation)."
+  value       = aws_route53_zone.main.name_servers
+}
+
+output "cloudfront_distribution_id" {
+  description = "CloudFront distribution id (for cache invalidations in P5/P6)."
+  value       = aws_cloudfront_distribution.main.id
+}
+
+output "cloudfront_domain_name" {
+  description = "CloudFront distribution domain name."
+  value       = aws_cloudfront_distribution.main.domain_name
+}
+
+output "alb_dns_name" {
+  description = "ALB DNS name (origin behind alb.<domain>)."
+  value       = aws_lb.main.dns_name
+}
+
+output "ecs_cluster_name" {
+  description = "ECS cluster name (for CI deploys)."
+  value       = aws_ecs_cluster.main.name
+}
+
+output "ecs_service_name" {
+  description = "ECS service name (for CI deploys)."
+  value       = aws_ecs_service.app.name
+}
