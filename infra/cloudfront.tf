@@ -1,8 +1,13 @@
 locals {
-  # S3 static assets (already have extensions) — no path rewrite needed.
-  s3_asset_patterns = ["/_nuxt/*", "/fonts/*", "/__og-image__/*", "/favicon.ico", "/index.html"]
+  # S3 static assets / payloads (already have extensions) — no path rewrite needed. Patterns match
+  # the actual `nuxt generate` output: hashed /_nuxt, self-hosted /_fonts, /_og images, /_i18n
+  # payloads, the root payload, root icons/manifests, and explicit index.html.
+  s3_asset_patterns = [
+    "/_nuxt/*", "/_fonts/*", "/_og/*", "/_i18n/*", "/_payload.json",
+    "/index.html", "*.png", "*.svg", "*.ico", "*.webmanifest", "*.xml", "*.txt",
+  ]
   # Extensionless frontend routes — the rewrite function appends `.html`.
-  s3_route_patterns = ["/settings*", "/qr*", "/unlock*"]
+  s3_route_patterns = ["/settings*", "/qr*"]
 }
 
 resource "aws_cloudfront_origin_access_control" "frontend" {
