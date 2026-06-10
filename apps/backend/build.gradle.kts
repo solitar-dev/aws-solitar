@@ -65,12 +65,20 @@ kotlin {
     }
 }
 
+// Ship a native MAIN image but run tests on the JVM (Testcontainers). Disabling native test support
+// drops processTestAot from the build graph so JVM tasks (lint/build/check) don't try to start
+// LocalStack during Spring AOT analysis.
+graalvmNative { testSupport = false }
+
 tasks.withType<Test> { useJUnitPlatform() }
 
 spotless {
     encoding("UTF-8")
 
     kotlin {
+        // Only hand-written sources — not Spring AOT-generated source sets (whose codegen task
+        // would otherwise be pulled into spotlessCheck and require Docker/LocalStack).
+        target("src/**/*.kt")
         ktfmt("0.62").kotlinlangStyle().configure {
             it.setMaxWidth(100)
             it.setBlockIndent(4)
