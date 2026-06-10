@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: kgs
+  main:
+    banner-mode: off
+  data:
+    redis:
+      url: ${KGS_REDIS_URL}
+
+server:
+  port: ${KGS_SERVER_PORT:8081}
+
+app:
+  max-key: 1000
+  batch-size: 100
+  counter-start: 0
