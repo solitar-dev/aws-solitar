@@ -26,4 +26,11 @@ jobs:
 
       - uses: jdx/mise-action@v3
 
-      - run: mise run ci
+      - uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version: "24"
+          cache: true
+
+      - run: vp install
+
+      - run: vpr ci
