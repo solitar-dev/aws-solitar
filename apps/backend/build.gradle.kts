@@ -33,7 +33,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-jetty")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("tools.jackson.module:jackson-module-kotlin")
-    implementation("org.sqids:sqids-kotlin:0.1.1")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-cache")
     implementation("com.github.ben-manes.caffeine:caffeine")

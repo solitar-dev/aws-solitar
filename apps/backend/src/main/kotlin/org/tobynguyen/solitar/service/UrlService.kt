@@ -1,10 +1,9 @@
 package org.tobynguyen.solitar.service
 
 import io.awspring.cloud.sqs.operations.SqsTemplate
-import java.util.concurrent.ThreadLocalRandom
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import org.tobynguyen.solitar.exception.ShortCodeConflictException
+import org.tobynguyen.solitar.exception.CodeGenerationException
 import org.tobynguyen.solitar.exception.UrlNotFoundException
 import org.tobynguyen.solitar.messaging.QueueNames
 import org.tobynguyen.solitar.model.dto.UrlCreateDto
@@ -14,9 +13,14 @@ import org.tobynguyen.solitar.model.entity.UrlEntity
 import org.tobynguyen.solitar.model.event.LinkCreatedEvent
 import org.tobynguyen.solitar.model.event.LinkForwardedEvent
 import org.tobynguyen.solitar.repository.UrlRepository
+import org.tobynguyen.solitar.util.CodeGenerator
 
 @Service
-class UrlService(private val urlRepository: UrlRepository, private val sqsTemplate: SqsTemplate) {
+class UrlService(
+    private val urlRepository: UrlRepository,
+    private val sqsTemplate: SqsTemplate,
+    private val codeGenerator: CodeGenerator,
+) {
 
     /**
      * Resolve a short code to its target URL. The lookup is Caffeine-cached (in the repository),
@@ -40,22 +44,29 @@ class UrlService(private val urlRepository: UrlRepository, private val sqsTempla
     fun getOriginalUrl(data: UrlForwardDto): UrlForwardResponseDto =
         UrlForwardResponseDto(resolve(data.shortCode).originalUrl)
 
+    /**
+     * Mint a short code with a conditional write: generate a random Base62 code (skipping reserved
+     * route words) and `putIfAbsent`; on a collision regenerate, up to [MAX_GENERATION_ATTEMPTS].
+     * Replaces the deleted KGS key-minting service.
+     */
     fun createUrl(data: UrlCreateDto): UrlEntity {
         val (url) = data
 
-        val shortCode = generateCode()
-        val entity = UrlEntity.builder().id(shortCode).originalUrl(url).build()
+        repeat(MAX_GENERATION_ATTEMPTS) {
+            val code = codeGenerator.generate()
+            if (codeGenerator.isReserved(code)) return@repeat
 
-        // TODO(P2): regenerate + retry on collision instead of surfacing a 409 to the caller.
-        if (!urlRepository.putIfAbsent(entity)) {
-            throw ShortCodeConflictException(
-                "Short code '$shortCode' already exists; please retry."
-            )
+            val entity = UrlEntity.builder().id(code).originalUrl(url).build()
+            if (urlRepository.putIfAbsent(entity)) {
+                publish(
+                    QueueNames.LINK_CREATED,
+                    LinkCreatedEvent(shortCode = code, originalUrl = url),
+                )
+                return entity
+            }
         }
 
-        publish(QueueNames.LINK_CREATED, LinkCreatedEvent(shortCode = shortCode, originalUrl = url))
-
-        return entity
+        throw CodeGenerationException()
     }
 
     /** Best-effort event publish: stats are secondary to the core create/redirect succeeding. */
@@ -67,19 +78,8 @@ class UrlService(private val urlRepository: UrlRepository, private val sqsTempla
         }
     }
 
-    /**
-     * Single code-generation seam (interim random Base62). P2 replaces with the KGS-free strategy.
-     */
-    private fun generateCode(): String {
-        val random = ThreadLocalRandom.current()
-        return buildString {
-            repeat(CODE_LENGTH) { append(ALPHABET[random.nextInt(ALPHABET.length)]) }
-        }
-    }
-
     private companion object {
         val log = LoggerFactory.getLogger(UrlService::class.java)
-        const val ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-        const val CODE_LENGTH = 7
+        const val MAX_GENERATION_ATTEMPTS = 5
     }
 }
