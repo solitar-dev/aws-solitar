@@ -33,10 +33,11 @@ How Solitar is built, deployed, and operated on AWS. Architecture lives in
 ## CI/CD (GitHub Actions, OIDC — no long-lived keys)
 
 - **`.github/workflows/backend-deploy.yml`** — on `apps/backend/**`: builds the native ARM64 image on
-  a free public-repo `ubuntu-24.04-arm` runner via `apps/backend/Dockerfile`, pushes to ECR
-  (`:${sha}` + `:latest`), then renders the live (Terraform-owned) task definition with the new image
-  and deploys to ECS with `wait-for-service-stability`. (Private repo? Switch to `ubuntu-latest` +
-  buildx/QEMU for arm64.)
+  `ubuntu-latest` via docker buildx + QEMU (the repo is private, so the free `ubuntu-24.04-arm`
+  runners are unavailable — the emulated build is slower but free), pushes to ECR (`:${sha}` +
+  `:latest`), then renders the live (Terraform-owned) task definition with the new image and deploys
+  to ECS with `wait-for-service-stability`. (If the repo is made public, switch `runs-on` to
+  `ubuntu-24.04-arm` and drop the QEMU/buildx steps for a much faster native build.)
 - **`.github/workflows/frontend-deploy.yml`** — on `apps/frontend/**`/`packages/**`: `pnpm generate`
   → `aws s3 sync` (hashed `_nuxt`/`_fonts` immutable, everything else `no-cache`, `--delete`) →
   CloudFront invalidation.

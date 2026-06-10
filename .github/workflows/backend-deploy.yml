@@ -1,8 +1,10 @@
 name: Backend Deploy
 
 # Builds the GraalVM native ARM64 image and rolls it out to ECS Fargate.
-# Public-repo ARM64 runners are free, so the native image builds directly (no QEMU). If the repo is
-# made private, switch `runs-on` to `ubuntu-latest` and build with docker buildx + QEMU for arm64.
+# The repo is private, so GitHub's free ARM64 runners are unavailable — the arm64 native image is
+# built on ubuntu-latest via docker buildx + QEMU emulation (slower, but free on private repos).
+# If the repo is later made public, switch `runs-on` to `ubuntu-24.04-arm` and drop the QEMU/buildx
+# setup for a much faster native build.
 on:
   push:
     branches: [main]
@@ -20,9 +22,17 @@ env:
 
 jobs:
   deploy:
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set up QEMU (arm64 emulation)
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
@@ -34,18 +44,22 @@ jobs:
         id: ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build and push native image
-        id: build
-        env:
-          REGISTRY: ${{ steps.ecr.outputs.registry }}
-          REPOSITORY: ${{ vars.ECR_REPOSITORY }}
-          TAG: ${{ github.sha }}
-        run: |
-          IMAGE="$REGISTRY/$REPOSITORY:$TAG"
-          docker build -f apps/backend/Dockerfile -t "$IMAGE" -t "$REGISTRY/$REPOSITORY:latest" .
-          docker push "$IMAGE"
-          docker push "$REGISTRY/$REPOSITORY:latest"
-          echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
+      - name: Compute image reference
+        id: img
+        run: echo "image=${{ steps.ecr.outputs.registry }}/${{ vars.ECR_REPOSITORY }}:${{ github.sha }}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push native arm64 image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/backend/Dockerfile
+          platforms: linux/arm64
+          push: true
+          tags: |
+            ${{ steps.img.outputs.image }}
+            ${{ steps.ecr.outputs.registry }}/${{ vars.ECR_REPOSITORY }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       # Terraform owns the base task definition; CI only swaps the image tag. Pull the live def and
       # strip the read-only fields registerTaskDefinition rejects.
@@ -64,7 +78,7 @@ jobs:
         with:
           task-definition: task-definition.json
           container-name: solitar
-          image: ${{ steps.build.outputs.image }}
+          image: ${{ steps.img.outputs.image }}
 
       - name: Deploy to ECS
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
