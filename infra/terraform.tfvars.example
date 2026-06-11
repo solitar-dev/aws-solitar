@@ -1,5 +1,5 @@
 # Copy to terraform.tfvars (gitignored) and adjust. Only `github_repo` is required.
-region         = "us-east-1"
+region         = "ap-southeast-1"
 project        = "solitar"
 domain_name    = "solitar.link"
 alert_email    = "you@example.com"
