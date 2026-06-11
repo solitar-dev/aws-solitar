@@ -10,24 +10,24 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbParti
  * DynamoDB `statistics` item — a single row keyed `id="global"`. Counters are mutated atomically
  * via `UpdateItem ADD` in [org.tobynguyen.solitar.repository.StatisticsRepository]; this entity is
  * used only for reads.
+ *
+ * Builder uses PRIVATE fields + fluent setters only (no public `getX`/`setX`) — see
+ * [UrlEntity] for why the immutable introspector requires that shape.
  */
 @DynamoDbImmutable(builder = StatisticsEntity.Builder::class)
-class StatisticsEntity private constructor(builder: Builder) {
-
-    @get:DynamoDbPartitionKey val id: String = builder.id ?: GLOBAL_ID
-
-    val totalLinks: Long = builder.totalLinks
-
-    val totalClicks: Long = builder.totalClicks
-
-    @get:DynamoDbConvertedBy(InstantAttributeConverter::class)
-    val updatedAt: Instant = builder.updatedAt ?: Instant.now()
+class StatisticsEntity
+private constructor(
+    @get:DynamoDbPartitionKey val id: String,
+    val totalLinks: Long,
+    val totalClicks: Long,
+    @get:DynamoDbConvertedBy(InstantAttributeConverter::class) val updatedAt: Instant,
+) {
 
     class Builder {
-        var id: String? = null
-        var totalLinks: Long = 0
-        var totalClicks: Long = 0
-        var updatedAt: Instant? = null
+        private var id: String? = null
+        private var totalLinks: Long = 0
+        private var totalClicks: Long = 0
+        private var updatedAt: Instant? = null
 
         fun id(id: String) = apply { this.id = id }
 
@@ -37,7 +37,13 @@ class StatisticsEntity private constructor(builder: Builder) {
 
         fun updatedAt(updatedAt: Instant) = apply { this.updatedAt = updatedAt }
 
-        fun build() = StatisticsEntity(this)
+        fun build() =
+            StatisticsEntity(
+                id = id ?: GLOBAL_ID,
+                totalLinks = totalLinks,
+                totalClicks = totalClicks,
+                updatedAt = updatedAt ?: Instant.now(),
+            )
     }
 
     companion object {
