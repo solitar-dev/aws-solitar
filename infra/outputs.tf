@@ -102,3 +102,10 @@ output "ecs_service_name" {
   description = "ECS service name (for CI deploys)."
   value       = aws_ecs_service.app.name
 }
+
+# --- elasticache-valkey-grafana plan ---
+
+output "valkey_endpoint" {
+  description = "ElastiCache Serverless (Valkey) endpoint address. Injected into the ECS task as VALKEY_HOST; substitute into apps/backend/task-definition.json for CI deploys. Private DNS name, not a secret."
+  value       = aws_elasticache_serverless_cache.valkey.endpoint[0].address
+}

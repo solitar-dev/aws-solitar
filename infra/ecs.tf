@@ -44,6 +44,8 @@ resource "aws_ecs_task_definition" "app" {
       { name = "SPRING_PROFILES_ACTIVE", value = "prod" },
       { name = "AWS_REGION", value = var.region },
       { name = "BACKEND_SERVER_PORT", value = tostring(var.container_port) },
+      { name = "VALKEY_HOST", value = aws_elasticache_serverless_cache.valkey.endpoint[0].address },
+      { name = "VALKEY_SSL", value = "true" },
     ]
     logConfiguration = {
       logDriver = "awslogs"
