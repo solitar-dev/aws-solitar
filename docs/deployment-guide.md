@@ -9,6 +9,8 @@ How Solitar is built, deployed, and operated on AWS. Architecture lives in
 - **Backend** — Spring Boot 4 (Kotlin), GraalVM native image (ARM64), ECS Fargate Spot behind an ALB.
 - **Frontend** — Nuxt 4 static export (`nuxt generate`) on S3 + CloudFront.
 - **Data** — DynamoDB (`urls`, `statistics`), SQS (`link-created`, `link-forwarded`, `link-events-dlq`).
+- **Cache** — ElastiCache Serverless Valkey (intra-VPC, TLS) via Spring Cache over Lettuce.
+- **Monitoring** — Grafana Cloud (free) over CloudWatch, through a read-only IAM user.
 - **Infra** — Terraform in [`infra/`](../infra) (provider AWS `~> 6`).
 
 ## One-time bootstrap
@@ -44,10 +46,43 @@ How Solitar is built, deployed, and operated on AWS. Architecture lives in
 
 ## Local development
 
-- **Backend** — `docker compose up` starts the app + a single LocalStack (DynamoDB + SQS, tables and
-  queues provisioned by `apps/backend/localstack-init/`). Tests use Testcontainers LocalStack:
+- **Backend** — `docker compose up` starts the app, a single LocalStack (DynamoDB + SQS, tables and
+  queues provisioned by `apps/backend/localstack-init/`), and a Valkey container (the redirect cache;
+  `VALKEY_SSL=false` locally). Tests use Testcontainers (LocalStack + Valkey):
   `mise exec -- ./gradlew test` (needs Docker).
 - **Frontend** — `pnpm --filter @solitar/frontend dev` (or `vp dev`).
+
+## Grafana Cloud setup (monitoring)
+
+$0 monitoring over free-namespace CloudWatch metrics. Do this once, after the stack is live.
+
+1. **Create the IAM reader** — `terraform apply` creates `aws_iam_user.grafana_cloud_readonly`
+   (`CloudWatchReadOnlyAccess`). Terraform does **not** create an access key on purpose.
+2. **Mint the access key by hand** (keeps the secret out of Terraform state):
+
+    ```bash
+    aws iam create-access-key --user-name "$(terraform -chdir=infra output -raw grafana_iam_user_name)"
+    ```
+
+    Paste the `AccessKeyId` / `SecretAccessKey` straight into Grafana in the next step — never write
+    them to a file, the repo, or `terraform.tfvars`.
+
+3. **Grafana Cloud account** — create a free stack at grafana.com. Add a **CloudWatch** data source:
+   auth = _Access & secret key_, paste the pair from step 2, default region `us-east-1`.
+4. **Import the dashboard** — Dashboards → Import → upload
+   [`infra/grafana/dashboard-solitar.json`](../infra/grafana/dashboard-solitar.json); pick the
+   CloudWatch data source when prompted. Panels cover ALB, ECS, DynamoDB, SQS, and ElastiCache. Leave
+   the dashboard refresh at **5m** (caps `GetMetricData` spend at ~$1–2/mo).
+5. **Alerts (3)** — create in Grafana Alerting, evaluation interval **≥5m**:
+    - **DLQ not empty** — SQS `ApproximateNumberOfMessagesVisible` on `link-events-dlq` > 0.
+    - **ALB 5xx spike** — `HTTPCode_Target_5XX_Count` over your threshold in the window.
+    - **ECS memory high** — `MemoryUtilization` > 80%.
+6. **Verify** — generate a couple of redirects so the ElastiCache (`CacheHits`) and ALB panels fill,
+   then drop a test message on the DLQ to confirm the DLQ alert fires and resolves on drain.
+
+> The committed dashboard uses serverless ElastiCache metric names (`ElastiCacheProcessingUnits`,
+> `BytesUsedForCache`) and wildcard dimensions so it imports without editing — refine
+> dimensions/thresholds in the UI as needed. The AWS Budgets alarm is independent of Grafana.
 
 ## Smoke test (post-deploy)
 
