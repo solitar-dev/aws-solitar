@@ -23,7 +23,7 @@ services:
         condition: service_healthy
 
   localstack:
-    image: localstack/localstack:latest
+    image: localstack/localstack:3.8 # pinned: community (DynamoDB+SQS, no auth token); matches the test suite. ':latest' now nags for a Pro LOCALSTACK_AUTH_TOKEN.
     container_name: solitar-localstack
     restart: on-failure
     ports:
