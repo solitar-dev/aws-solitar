@@ -29,6 +29,7 @@ Solitar is an AWS-native URL shortener.
 
 - [docs/system-architecture.md](./docs/system-architecture.md) — topology and design trade-offs
 - [docs/deployment-guide.md](./docs/deployment-guide.md) — build, CI/CD, GitHub variables, smoke tests
+- [docs/aws-setup-checklist.md](./docs/aws-setup-checklist.md) — ordered first-time setup commands (native gate → infra → deploy)
 - [docs/teardown-and-upgrade-runbook.md](./docs/teardown-and-upgrade-runbook.md) — clean teardown / upgrade before credit EOL
 - [infra/README.md](./infra/README.md) — Terraform apply order and constraints
 
