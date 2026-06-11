@@ -70,7 +70,7 @@ jobs:
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: task-definition.json
-          container-name: solitar
+          container-name: aws-solitar
           image: ${{ steps.img.outputs.image }}
 
       - name: Deploy to ECS
