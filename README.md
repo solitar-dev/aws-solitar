@@ -18,7 +18,30 @@
 
 ## Solitar Monorepo
 
-Welcome to the Solitar Monorepo
+Solitar is an AWS-native URL shortener.
+
+- **`apps/backend`** — Spring Boot 4 (Kotlin) compiled to a GraalVM native image, on ECS Fargate
+  Spot behind an ALB. Persistence on DynamoDB, messaging on SQS, in-process Caffeine cache.
+- **`apps/frontend`** — Nuxt 4 static site (`nuxt generate`) served from S3 + CloudFront.
+- **`infra`** — Terraform for the whole AWS stack.
+
+### Architecture & operations
+
+- [docs/system-architecture.md](./docs/system-architecture.md) — topology and design trade-offs
+- [docs/deployment-guide.md](./docs/deployment-guide.md) — build, CI/CD, GitHub variables, smoke tests
+- [docs/aws-setup-checklist.md](./docs/aws-setup-checklist.md) — ordered first-time setup commands (native gate → infra → deploy)
+- [docs/teardown-and-upgrade-runbook.md](./docs/teardown-and-upgrade-runbook.md) — clean teardown / upgrade before credit EOL
+- [infra/README.md](./infra/README.md) — Terraform apply order and constraints
+
+### Local development
+
+```bash
+# Backend + LocalStack (DynamoDB + SQS)
+docker compose up
+
+# Frontend
+pnpm --filter @solitar/frontend dev
+```
 
 ## License
 

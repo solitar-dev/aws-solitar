@@ -1,0 +1,776 @@
+{
+	"__inputs": [
+		{
+			"name": "DS_CLOUDWATCH",
+			"label": "CloudWatch",
+			"description": "CloudWatch datasource (region us-east-1)",
+			"type": "datasource",
+			"pluginId": "cloudwatch",
+			"pluginName": "CloudWatch"
+		}
+	],
+	"__requires": [
+		{
+			"type": "grafana",
+			"id": "grafana",
+			"name": "Grafana",
+			"version": "11.0.0"
+		},
+		{
+			"type": "datasource",
+			"id": "cloudwatch",
+			"name": "CloudWatch",
+			"version": "1.0.0"
+		},
+		{
+			"type": "panel",
+			"id": "timeseries",
+			"name": "Time series",
+			"version": ""
+		}
+	],
+	"annotations": {
+		"list": []
+	},
+	"editable": true,
+	"graphTooltip": 1,
+	"panels": [
+		{
+			"id": 1,
+			"type": "timeseries",
+			"title": "ALB \u2014 Request Count",
+			"datasource": {
+				"type": "cloudwatch",
+				"uid": "${DS_CLOUDWATCH}"
+			},
+			"gridPos": {
+				"h": 8,
+				"w": 12,
+				"x": 0,
+				"y": 0
+			},
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"custom": {
+						"drawStyle": "line",
+						"fillOpacity": 8
+					}
+				},
+				"overrides": []
+			},
+			"options": {
+				"legend": {
+					"displayMode": "list",
+					"placement": "bottom"
+				},
+				"tooltip": {
+					"mode": "multi"
+				}
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "cloudwatch",
+						"uid": "${DS_CLOUDWATCH}"
+					},
+					"namespace": "AWS/ApplicationELB",
+					"metricName": "RequestCount",
+					"dimensions": {
+						"LoadBalancer": "*"
+					},
+					"statistic": "Sum",
+					"period": "300",
+					"region": "us-east-1",
+					"metricQueryType": 0,
+					"metricEditorMode": 0,
+					"matchExact": false,
+					"hide": false
+				}
+			]
+		},
+		{
+			"id": 2,
+			"type": "timeseries",
+			"title": "ALB \u2014 Target Response Time (p50 / p99)",
+			"datasource": {
+				"type": "cloudwatch",
+				"uid": "${DS_CLOUDWATCH}"
+			},
+			"gridPos": {
+				"h": 8,
+				"w": 12,
+				"x": 12,
+				"y": 0
+			},
+			"fieldConfig": {
+				"defaults": {
+					"unit": "s",
+					"custom": {
+						"drawStyle": "line",
+						"fillOpacity": 8
+					}
+				},
+				"overrides": []
+			},
+			"options": {
+				"legend": {
+					"displayMode": "list",
+					"placement": "bottom"
+				},
+				"tooltip": {
+					"mode": "multi"
+				}
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "cloudwatch",
+						"uid": "${DS_CLOUDWATCH}"
+					},
+					"namespace": "AWS/ApplicationELB",
+					"metricName": "TargetResponseTime",
+					"dimensions": {
+						"LoadBalancer": "*"
+					},
+					"statistic": "p50",
+					"period": "300",
+					"region": "us-east-1",
+					"metricQueryType": 0,
+					"metricEditorMode": 0,
+					"matchExact": false,
+					"hide": false,
+					"label": "p50"
+				},
+				{
+					"refId": "B",
+					"datasource": {
+						"type": "cloudwatch",
+						"uid": "${DS_CLOUDWATCH}"
+					},
+					"namespace": "AWS/ApplicationELB",
+					"metricName": "TargetResponseTime",
+					"dimensions": {
+						"LoadBalancer": "*"
+					},
+					"statistic": "p99",
+					"period": "300",
+					"region": "us-east-1",
+					"metricQueryType": 0,
+					"metricEditorMode": 0,
+					"matchExact": false,
+					"hide": false,
+					"label": "p99"
+				}
+			]
+		},
+		{
+			"id": 3,
+			"type": "timeseries",
+			"title": "ALB \u2014 Target 5XX",
+			"datasource": {
+				"type": "cloudwatch",
+				"uid": "${DS_CLOUDWATCH}"
+			},
+			"gridPos": {
+				"h": 8,
+				"w": 12,
+				"x": 0,
+				"y": 8
+			},
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"custom": {
+						"drawStyle": "line",
+						"fillOpacity": 8
+					}
+				},
+				"overrides": []
+			},
+			"options": {
+				"legend": {
+					"displayMode": "list",
+					"placement": "bottom"
+				},
+				"tooltip": {
+					"mode": "multi"
+				}
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "cloudwatch",
+						"uid": "${DS_CLOUDWATCH}"
+					},
+					"namespace": "AWS/ApplicationELB",
+					"metricName": "HTTPCode_Target_5XX_Count",
+					"dimensions": {
+						"LoadBalancer": "*"
+					},
+					"statistic": "Sum",
+					"period": "300",
+					"region": "us-east-1",
+					"metricQueryType": 0,
+					"metricEditorMode": 0,
+					"matchExact": false,
+					"hide": false
+				}
+			]
+		},
+		{
+			"id": 4,
+			"type": "timeseries",
+			"title": "ECS \u2014 CPU / Memory Utilization",
+			"datasource": {
+				"type": "cloudwatch",
+				"uid": "${DS_CLOUDWATCH}"
+			},
+			"gridPos": {
+				"h": 8,
+				"w": 12,
+				"x": 12,
+				"y": 8
+			},
+			"fieldConfig": {
+				"defaults": {
+					"unit": "percent",
+					"custom": {
+						"drawStyle": "line",
+						"fillOpacity": 8
+					}
+				},
+				"overrides": []
+			},
+			"options": {
+				"legend": {
+					"displayMode": "list",
+					"placement": "bottom"
+				},
+				"tooltip": {
+					"mode": "multi"
+				}
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "cloudwatch",
+						"uid": "${DS_CLOUDWATCH}"
+					},
+					"namespace": "AWS/ECS",
+					"metricName": "CPUUtilization",
+					"dimensions": {
+						"ClusterName": "solitar",
+						"ServiceName": "solitar"
+					},
+					"statistic": "Average",
+					"period": "300",
+					"region": "us-east-1",
+					"metricQueryType": 0,
+					"metricEditorMode": 0,
+					"matchExact": false,
+					"hide": false,
+					"label": "cpu %"
+				},
+				{
+					"refId": "B",
+					"datasource": {
+						"type": "cloudwatch",
+						"uid": "${DS_CLOUDWATCH}"
+					},
+					"namespace": "AWS/ECS",
+					"metricName": "MemoryUtilization",
+					"dimensions": {
+						"ClusterName": "solitar",
+						"ServiceName": "solitar"
+					},
+					"statistic": "Average",
+					"period": "300",
+					"region": "us-east-1",
+					"metricQueryType": 0,
+					"metricEditorMode": 0,
+					"matchExact": false,
+					"hide": false,
+					"label": "mem %"
+				}
+			]
+		},
+		{
+			"id": 5,
+			"type": "timeseries",
+			"title": "DynamoDB \u2014 Consumed Capacity (RCU / WCU)",
+			"datasource": {
+				"type": "cloudwatch",
+				"uid": "${DS_CLOUDWATCH}"
+			},
+			"gridPos": {
+				"h": 8,
+				"w": 12,
+				"x": 0,
+				"y": 16
+			},
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"custom": {
+						"drawStyle": "line",
+						"fillOpacity": 8
+					}
+				},
+				"overrides": []
+			},
+			"options": {
+				"legend": {
+					"displayMode": "list",
+					"placement": "bottom"
+				},
+				"tooltip": {
+					"mode": "multi"
+				}
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "cloudwatch",
+						"uid": "${DS_CLOUDWATCH}"
+					},
+					"namespace": "AWS/DynamoDB",
+					"metricName": "ConsumedReadCapacityUnits",
+					"dimensions": {
+						"TableName": "*"
+					},
+					"statistic": "Sum",
+					"period": "300",
+					"region": "us-east-1",
+					"metricQueryType": 0,
+					"metricEditorMode": 0,
+					"matchExact": false,
+					"hide": false,
+					"label": "RCU"
+				},
+				{
+					"refId": "B",
+					"datasource": {
+						"type": "cloudwatch",
+						"uid": "${DS_CLOUDWATCH}"
+					},
+					"namespace": "AWS/DynamoDB",
+					"metricName": "ConsumedWriteCapacityUnits",
+					"dimensions": {
+						"TableName": "*"
+					},
+					"statistic": "Sum",
+					"period": "300",
+					"region": "us-east-1",
+					"metricQueryType": 0,
+					"metricEditorMode": 0,
+					"matchExact": false,
+					"hide": false,
+					"label": "WCU"
+				}
+			]
+		},
+		{
+			"id": 6,
+			"type": "timeseries",
+			"title": "DynamoDB \u2014 Throttle Events",
+			"datasource": {
+				"type": "cloudwatch",
+				"uid": "${DS_CLOUDWATCH}"
+			},
+			"gridPos": {
+				"h": 8,
+				"w": 12,
+				"x": 12,
+				"y": 16
+			},
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"custom": {
+						"drawStyle": "line",
+						"fillOpacity": 8
+					}
+				},
+				"overrides": []
+			},
+			"options": {
+				"legend": {
+					"displayMode": "list",
+					"placement": "bottom"
+				},
+				"tooltip": {
+					"mode": "multi"
+				}
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "cloudwatch",
+						"uid": "${DS_CLOUDWATCH}"
+					},
+					"namespace": "AWS/DynamoDB",
+					"metricName": "ReadThrottleEvents",
+					"dimensions": {
+						"TableName": "*"
+					},
+					"statistic": "Sum",
+					"period": "300",
+					"region": "us-east-1",
+					"metricQueryType": 0,
+					"metricEditorMode": 0,
+					"matchExact": false,
+					"hide": false,
+					"label": "read throttles"
+				},
+				{
+					"refId": "B",
+					"datasource": {
+						"type": "cloudwatch",
+						"uid": "${DS_CLOUDWATCH}"
+					},
+					"namespace": "AWS/DynamoDB",
+					"metricName": "WriteThrottleEvents",
+					"dimensions": {
+						"TableName": "*"
+					},
+					"statistic": "Sum",
+					"period": "300",
+					"region": "us-east-1",
+					"metricQueryType": 0,
+					"metricEditorMode": 0,
+					"matchExact": false,
+					"hide": false,
+					"label": "write throttles"
+				}
+			]
+		},
+		{
+			"id": 7,
+			"type": "timeseries",
+			"title": "SQS \u2014 Messages Visible (queues + DLQ)",
+			"datasource": {
+				"type": "cloudwatch",
+				"uid": "${DS_CLOUDWATCH}"
+			},
+			"gridPos": {
+				"h": 8,
+				"w": 12,
+				"x": 0,
+				"y": 24
+			},
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"custom": {
+						"drawStyle": "line",
+						"fillOpacity": 8
+					}
+				},
+				"overrides": []
+			},
+			"options": {
+				"legend": {
+					"displayMode": "list",
+					"placement": "bottom"
+				},
+				"tooltip": {
+					"mode": "multi"
+				}
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "cloudwatch",
+						"uid": "${DS_CLOUDWATCH}"
+					},
+					"namespace": "AWS/SQS",
+					"metricName": "ApproximateNumberOfMessagesVisible",
+					"dimensions": {
+						"QueueName": "*"
+					},
+					"statistic": "Maximum",
+					"period": "300",
+					"region": "us-east-1",
+					"metricQueryType": 0,
+					"metricEditorMode": 0,
+					"matchExact": false,
+					"hide": false
+				}
+			]
+		},
+		{
+			"id": 8,
+			"type": "timeseries",
+			"title": "SQS \u2014 Age of Oldest Message",
+			"datasource": {
+				"type": "cloudwatch",
+				"uid": "${DS_CLOUDWATCH}"
+			},
+			"gridPos": {
+				"h": 8,
+				"w": 12,
+				"x": 12,
+				"y": 24
+			},
+			"fieldConfig": {
+				"defaults": {
+					"unit": "s",
+					"custom": {
+						"drawStyle": "line",
+						"fillOpacity": 8
+					}
+				},
+				"overrides": []
+			},
+			"options": {
+				"legend": {
+					"displayMode": "list",
+					"placement": "bottom"
+				},
+				"tooltip": {
+					"mode": "multi"
+				}
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "cloudwatch",
+						"uid": "${DS_CLOUDWATCH}"
+					},
+					"namespace": "AWS/SQS",
+					"metricName": "ApproximateAgeOfOldestMessage",
+					"dimensions": {
+						"QueueName": "*"
+					},
+					"statistic": "Maximum",
+					"period": "300",
+					"region": "us-east-1",
+					"metricQueryType": 0,
+					"metricEditorMode": 0,
+					"matchExact": false,
+					"hide": false
+				}
+			]
+		},
+		{
+			"id": 9,
+			"type": "timeseries",
+			"title": "ElastiCache \u2014 Cache Hits / Misses",
+			"datasource": {
+				"type": "cloudwatch",
+				"uid": "${DS_CLOUDWATCH}"
+			},
+			"gridPos": {
+				"h": 8,
+				"w": 12,
+				"x": 0,
+				"y": 32
+			},
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"custom": {
+						"drawStyle": "line",
+						"fillOpacity": 8
+					}
+				},
+				"overrides": []
+			},
+			"options": {
+				"legend": {
+					"displayMode": "list",
+					"placement": "bottom"
+				},
+				"tooltip": {
+					"mode": "multi"
+				}
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "cloudwatch",
+						"uid": "${DS_CLOUDWATCH}"
+					},
+					"namespace": "AWS/ElastiCache",
+					"metricName": "CacheHits",
+					"dimensions": {
+						"CacheClusterId": "*"
+					},
+					"statistic": "Sum",
+					"period": "300",
+					"region": "us-east-1",
+					"metricQueryType": 0,
+					"metricEditorMode": 0,
+					"matchExact": false,
+					"hide": false,
+					"label": "hits"
+				},
+				{
+					"refId": "B",
+					"datasource": {
+						"type": "cloudwatch",
+						"uid": "${DS_CLOUDWATCH}"
+					},
+					"namespace": "AWS/ElastiCache",
+					"metricName": "CacheMisses",
+					"dimensions": {
+						"CacheClusterId": "*"
+					},
+					"statistic": "Sum",
+					"period": "300",
+					"region": "us-east-1",
+					"metricQueryType": 0,
+					"metricEditorMode": 0,
+					"matchExact": false,
+					"hide": false,
+					"label": "misses"
+				}
+			]
+		},
+		{
+			"id": 10,
+			"type": "timeseries",
+			"title": "ElastiCache \u2014 ECPUs Consumed",
+			"datasource": {
+				"type": "cloudwatch",
+				"uid": "${DS_CLOUDWATCH}"
+			},
+			"gridPos": {
+				"h": 8,
+				"w": 12,
+				"x": 12,
+				"y": 32
+			},
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"custom": {
+						"drawStyle": "line",
+						"fillOpacity": 8
+					}
+				},
+				"overrides": []
+			},
+			"options": {
+				"legend": {
+					"displayMode": "list",
+					"placement": "bottom"
+				},
+				"tooltip": {
+					"mode": "multi"
+				}
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "cloudwatch",
+						"uid": "${DS_CLOUDWATCH}"
+					},
+					"namespace": "AWS/ElastiCache",
+					"metricName": "ElastiCacheProcessingUnits",
+					"dimensions": {
+						"CacheClusterId": "*"
+					},
+					"statistic": "Sum",
+					"period": "300",
+					"region": "us-east-1",
+					"metricQueryType": 0,
+					"metricEditorMode": 0,
+					"matchExact": false,
+					"hide": false
+				}
+			]
+		},
+		{
+			"id": 11,
+			"type": "timeseries",
+			"title": "ElastiCache \u2014 Bytes Used For Cache",
+			"datasource": {
+				"type": "cloudwatch",
+				"uid": "${DS_CLOUDWATCH}"
+			},
+			"gridPos": {
+				"h": 8,
+				"w": 12,
+				"x": 0,
+				"y": 40
+			},
+			"fieldConfig": {
+				"defaults": {
+					"unit": "bytes",
+					"custom": {
+						"drawStyle": "line",
+						"fillOpacity": 8
+					}
+				},
+				"overrides": []
+			},
+			"options": {
+				"legend": {
+					"displayMode": "list",
+					"placement": "bottom"
+				},
+				"tooltip": {
+					"mode": "multi"
+				}
+			},
+			"targets": [
+				{
+					"refId": "A",
+					"datasource": {
+						"type": "cloudwatch",
+						"uid": "${DS_CLOUDWATCH}"
+					},
+					"namespace": "AWS/ElastiCache",
+					"metricName": "BytesUsedForCache",
+					"dimensions": {
+						"CacheClusterId": "*"
+					},
+					"statistic": "Average",
+					"period": "300",
+					"region": "us-east-1",
+					"metricQueryType": 0,
+					"metricEditorMode": 0,
+					"matchExact": false,
+					"hide": false
+				}
+			]
+		}
+	],
+	"refresh": "5m",
+	"schemaVersion": 39,
+	"tags": ["solitar", "aws", "cloudwatch"],
+	"templating": {
+		"list": [
+			{
+				"type": "datasource",
+				"name": "DS_CLOUDWATCH",
+				"label": "CloudWatch",
+				"query": "cloudwatch",
+				"hide": 0,
+				"refresh": 1,
+				"current": {},
+				"options": []
+			}
+		]
+	},
+	"time": {
+		"from": "now-6h",
+		"to": "now"
+	},
+	"timezone": "browser",
+	"title": "Solitar \u2014 AWS Overview",
+	"uid": "solitar-aws-overview",
+	"version": 1
+}

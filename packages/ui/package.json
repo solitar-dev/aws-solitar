@@ -33,6 +33,7 @@
 	"devDependencies": {
 		"@iconify-json/lucide": "catalog:frontend",
 		"@storybook/vue3-vite": "catalog:frontend",
+		"oxlint": "^1.67.0",
 		"sb-addon-vue-csf": "catalog:frontend",
 		"storybook": "catalog:frontend",
 		"unocss": "catalog:frontend",

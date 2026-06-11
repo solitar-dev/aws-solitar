@@ -1,117 +1,66 @@
-name: Deploy frontend
+name: Frontend Deploy
 
+# Generates the static Nuxt site and publishes it to S3 + CloudFront (replaces the old Cloudflare
+# Workers deploy from the pre-AWS architecture).
 on:
   push:
-    branches:
-      - main
-      - prod
+    branches: [main]
     paths:
+      - "apps/frontend/**"
+      - "packages/**"
       - ".github/workflows/frontend-deploy.yml"
-      - "apps/frontend/**/*"
-      - "apps/frontend/uno.config.ts"
-      - "apps/frontend/nuxt.config.ts"
-      - "**/wrangler.jsonc"
-      - "**/pnpm-*.yaml"
   workflow_dispatch:
-  workflow_call:
-    inputs:
-      environment:
-        required: true
-        type: string
-        description: "Environment to deploy to (staging-preview or production-preview)"
 
 permissions:
+  id-token: write
   contents: read
-  deployments: write
-  pull-requests: write
+
+env:
+  AWS_REGION: us-east-1
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
         with:
-          fetch-depth: 0
-
-      - name: Configure environment
-        id: metadata
-        run: |
-          echo "cmd=deploy" >> $GITHUB_OUTPUT
-
-          ENV_INPUT="${{ inputs.environment }}"
-          REF="${{ github.ref }}"
-          SHA_SHORT="${GITHUB_SHA::7}"
-
-          if [ "$ENV_INPUT" = "staging-preview" ]; then
-            echo "env=staging" >> $GITHUB_OUTPUT
-            echo "cmd=versions upload --preview-alias pr-$SHA_SHORT" >> $GITHUB_OUTPUT
-            echo "url=https://pr-$SHA_SHORT-frontend-staging.solitar.workers.dev" >> $GITHUB_OUTPUT
-
-          elif [ "$ENV_INPUT" = "production-preview" ]; then
-            echo "env=production" >> $GITHUB_OUTPUT
-            echo "cmd=versions upload --preview-alias pr-$SHA_SHORT" >> $GITHUB_OUTPUT
-            echo "url=https://pr-$SHA_SHORT-frontend.solitar.workers.dev" >> $GITHUB_OUTPUT
-
-          elif [ "$REF" = "refs/heads/main" ]; then
-            echo "env=staging" >> $GITHUB_OUTPUT
-            echo "url=https://staging.solitar.link" >> $GITHUB_OUTPUT
-
-          else
-            echo "env=production" >> $GITHUB_OUTPUT
-            echo "url=https://solitar.link" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v6
-        with:
+          node-version: 22
           cache: pnpm
 
-      - name: Install dependencies
-        working-directory: ./apps/frontend
-        run: pnpm install
+      - run: pnpm install --frozen-lockfile
 
-      - name: Build
-        working-directory: ./apps/frontend
-        run: pnpm build
+      - name: Generate static site
+        run: pnpm --filter @solitar/frontend generate
 
-      - name: Deploy Cloudflare Worker
-        id: wrangler
-        uses: cloudflare/wrangler-action@v3
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          environment: ${{ steps.metadata.outputs.env != 'production' && steps.metadata.outputs.env || '' }}
-          workingDirectory: ./apps/frontend
-          packageManager: pnpm
-          wranglerVersion: "4.65.0"
-          command: ${{ steps.metadata.outputs.cmd }}
+          role-to-assume: ${{ vars.AWS_OIDC_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
 
-      - name: Purge cache
-        if: github.ref == 'refs/heads/prod'
+      - name: Sync to S3
+        env:
+          BUCKET: ${{ vars.FRONTEND_BUCKET }}
+          DIST: apps/frontend/.output/public
         run: |
-          curl https://api.cloudflare.com/client/v4/zones/4ede5084774dc489678f0cf9695497b5/purge_cache \
-            -H 'Content-Type: application/json' \
-            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
-            -d '{
-              "hosts": [
-                "www.solitar.link",
-                "solitar.link",
-                "staging.solitar.link"
-              ]
-            }'
+          # 1) Immutable, content-hashed assets first (additive, long cache).
+          aws s3 sync "$DIST/_nuxt" "s3://$BUCKET/_nuxt" \
+            --cache-control "public,max-age=31536000,immutable" --delete
+          if [ -d "$DIST/_fonts" ]; then
+            aws s3 sync "$DIST/_fonts" "s3://$BUCKET/_fonts" \
+              --cache-control "public,max-age=31536000,immutable" --delete
+          fi
+          # 2) Everything else (HTML, og-images, i18n, payloads, icons) last, short cache, prune stale.
+          aws s3 sync "$DIST" "s3://$BUCKET" \
+            --cache-control "public,max-age=0,must-revalidate" --delete \
+            --exclude "_nuxt/*" --exclude "_fonts/*"
 
-      - name: Capture deployment URLs
-        if: ${{ inputs.environment != '' }}
+      - name: Invalidate CloudFront
         run: |
-          echo "${{ steps.metadata.outputs.url }}" > deployment-url-${{ inputs.environment }}.txt
-
-      - name: Upload deployment URLs
-        if: ${{ inputs.environment != '' }}
-        uses: actions/upload-artifact@v6
-        with:
-          name: deployment-url-${{ inputs.environment }}
-          path: deployment-url-${{ inputs.environment }}.txt
+          aws cloudfront create-invalidation \
+            --distribution-id "${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}" \
+            --paths '/*'

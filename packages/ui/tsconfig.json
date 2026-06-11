@@ -6,6 +6,7 @@
 	"include": [
 		"src/**/*.ts",
 		"src/**/*.vue",
+		".storybook/**/*.ts",
 		"vite.config.ts",
 		"uno.config.ts",
 		"oxlint.config.ts"

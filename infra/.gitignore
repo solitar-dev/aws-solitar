@@ -1,0 +1,19 @@
+# Terraform state may contain secrets and resource detail — never commit it.
+*.tfstate
+*.tfstate.*
+
+# Local provider/plugin cache and crash logs.
+.terraform/
+crash.log
+crash.*.log
+
+# Variable files may hold real account values; keep only the example.
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+
+# Saved plans.
+tfplan
+*.tfplan
+
+# NOTE: .terraform.lock.hcl is intentionally NOT ignored — commit it to pin provider versions.

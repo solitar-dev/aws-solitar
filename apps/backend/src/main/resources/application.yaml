@@ -5,23 +5,23 @@ spring:
     banner-mode: off
   profiles:
     default: prod
+  cloud:
+    aws:
+      region:
+        static: ${AWS_REGION:us-east-1}
+      # No static credentials / endpoint here: prod resolves the ECS task IAM role via the
+      # DefaultCredentialsProvider and the real AWS endpoints. The dev profile + tests override
+      # credentials and endpoints to point at LocalStack.
+
+  # ElastiCache (Valkey) over Lettuce. Local/dev points at the loopback valkey container (no TLS);
+  # prod is injected with the serverless endpoint + VALKEY_SSL=true via the ECS task env (phase-02).
   data:
     redis:
-      url: ${BACKEND_REDIS_URL}
-  cassandra:
-    contact-points: ${CASSANDRA_CONTACT_POINTS:localhost:9042}
-    keyspace-name: ${CASSANDRA_KEYSPACE:solitar}
-    local-datacenter: ${CASSANDRA_LOCAL_DATACENTER:datacenter1}
-    schema-action: create_if_not_exists
-  rabbitmq:
-    host: ${RABBITMQ_URL:localhost}
-    port: ${RABBITMQ_PORT:5672}
-    username: ${RABBITMQ_USER}
-    password: ${RABBITMQ_PASS}
+      host: ${VALKEY_HOST:localhost}
+      port: ${VALKEY_PORT:6379}
+      ssl:
+        enabled: ${VALKEY_SSL:false}
 
 server:
   forward-headers-strategy: framework
   port: ${BACKEND_SERVER_PORT:8080}
-
-app:
-  kgs-endpoint: http://localhost:8081

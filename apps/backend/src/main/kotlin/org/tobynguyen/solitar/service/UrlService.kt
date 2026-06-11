@@ -1,51 +1,76 @@
 package org.tobynguyen.solitar.service
 
-import org.springframework.cache.annotation.Cacheable
-import org.springframework.data.repository.findByIdOrNull
+import io.awspring.cloud.sqs.operations.SqsTemplate
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import org.springframework.web.client.RestClient
-import org.springframework.web.client.body
+import org.tobynguyen.solitar.exception.CodeGenerationException
 import org.tobynguyen.solitar.exception.UrlNotFoundException
-import org.tobynguyen.solitar.mapper.toResponseDto
+import org.tobynguyen.solitar.messaging.QueueNames
 import org.tobynguyen.solitar.model.dto.UrlCreateDto
-import org.tobynguyen.solitar.model.dto.UrlForwardDto
-import org.tobynguyen.solitar.model.dto.UrlForwardResponseDto
 import org.tobynguyen.solitar.model.entity.UrlEntity
 import org.tobynguyen.solitar.model.event.LinkCreatedEvent
 import org.tobynguyen.solitar.model.event.LinkForwardedEvent
 import org.tobynguyen.solitar.repository.UrlRepository
+import org.tobynguyen.solitar.util.CodeGenerator
 
 @Service
 class UrlService(
     private val urlRepository: UrlRepository,
-    private val kgsRestClient: RestClient,
-    private val rabbitMQPublisher: RabbitMQPublisher,
+    private val sqsTemplate: SqsTemplate,
+    private val codeGenerator: CodeGenerator,
 ) {
 
-    @Cacheable(value = ["urlForwardResponses"], key = "#data.shortCode")
-    fun getOriginalUrl(data: UrlForwardDto): UrlForwardResponseDto {
-        val (shortCode) = data
-
-        val urlEntity =
-            urlRepository.findByIdOrNull(shortCode)
+    /**
+     * Resolve a short code to its target URL. The lookup is ElastiCache (Valkey)-cached (in the
+     * repository), but a [LinkForwardedEvent] is published on EVERY call so click stats stay exact.
+     * Publishing is best-effort: a transient SQS failure drops the click, never the redirect.
+     */
+    fun resolve(shortCode: String): String {
+        val originalUrl =
+            urlRepository.findOriginalUrl(shortCode)
                 ?: throw UrlNotFoundException("Short URL with code '$shortCode' not found.")
 
-        rabbitMQPublisher.publishLinkForwarded(LinkForwardedEvent(shortCode = shortCode))
+        publish(QueueNames.LINK_FORWARDED, LinkForwardedEvent(shortCode = shortCode))
 
-        return UrlForwardResponseDto(urlEntity.toResponseDto().originalUrl)
+        return originalUrl
     }
 
+    /**
+     * Mint a short code with a conditional write: generate a random Base62 code (skipping reserved
+     * route words) and `putIfAbsent`; on a collision regenerate, up to [MAX_GENERATION_ATTEMPTS].
+     * Replaces the deleted KGS key-minting service.
+     */
     fun createUrl(data: UrlCreateDto): UrlEntity {
         val (url) = data
 
-        val shortCode = kgsRestClient.get().uri("key").retrieve().body<String>()!!
+        repeat(MAX_GENERATION_ATTEMPTS) {
+            val code = codeGenerator.generate()
+            if (codeGenerator.isReserved(code)) return@repeat
 
-        val entity = urlRepository.save(UrlEntity(id = shortCode, originalUrl = url))
+            val entity = UrlEntity.builder().id(code).originalUrl(url).build()
+            if (urlRepository.putIfAbsent(entity)) {
+                publish(
+                    QueueNames.LINK_CREATED,
+                    LinkCreatedEvent(shortCode = code, originalUrl = url),
+                )
+                return entity
+            }
+        }
 
-        rabbitMQPublisher.publishLinkCreated(
-            LinkCreatedEvent(shortCode = shortCode, originalUrl = url)
-        )
+        throw CodeGenerationException()
+    }
 
-        return entity
+    /** Best-effort event publish: stats are secondary to the core create/redirect succeeding. */
+    private fun publish(queue: String, event: Any) {
+        try {
+            sqsTemplate.send(queue, event)
+        } catch (e: Exception) {
+            log.warn("Failed to publish event to '{}' (stats may undercount): {}", queue, e.message)
+        }
+    }
+
+    private companion object {
+        val log = LoggerFactory.getLogger(UrlService::class.java)
+        const val MAX_GENERATION_ATTEMPTS = 5
     }
 }

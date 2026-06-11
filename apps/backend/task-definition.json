@@ -1,0 +1,36 @@
+{
+	"family": "solitar",
+	"requiresCompatibilities": ["FARGATE"],
+	"networkMode": "awsvpc",
+	"cpu": "256",
+	"memory": "512",
+	"runtimePlatform": {
+		"cpuArchitecture": "ARM64",
+		"operatingSystemFamily": "LINUX"
+	},
+	"executionRoleArn": "REPLACE_WITH_terraform_output_ecs_execution_role_arn",
+	"taskRoleArn": "REPLACE_WITH_terraform_output_ecs_task_role_arn",
+	"containerDefinitions": [
+		{
+			"name": "solitar",
+			"image": "REPLACE_WITH_ECR_IMAGE",
+			"essential": true,
+			"portMappings": [{ "containerPort": 8080, "protocol": "tcp" }],
+			"environment": [
+				{ "name": "SPRING_PROFILES_ACTIVE", "value": "prod" },
+				{ "name": "AWS_REGION", "value": "us-east-1" },
+				{ "name": "BACKEND_SERVER_PORT", "value": "8080" },
+				{ "name": "VALKEY_HOST", "value": "REPLACE_WITH_terraform_output_valkey_endpoint" },
+				{ "name": "VALKEY_SSL", "value": "true" }
+			],
+			"logConfiguration": {
+				"logDriver": "awslogs",
+				"options": {
+					"awslogs-group": "/ecs/solitar",
+					"awslogs-region": "us-east-1",
+					"awslogs-stream-prefix": "app"
+				}
+			}
+		}
+	]
+}

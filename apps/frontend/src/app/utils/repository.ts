@@ -17,11 +17,6 @@ export type UrlShortenerBody = {
 	expireTime?: string;
 };
 
-type GetLongUrlBody = {
-	shortCode: string;
-	password?: string;
-};
-
 export const repository = <T>(fetch: $Fetch<T, NitroFetchRequest>) => ({
 	async getStatisticData(): Promise<StatisticData> {
 		return fetch<StatisticData>("/statistics");
@@ -31,13 +26,5 @@ export const repository = <T>(fetch: $Fetch<T, NitroFetchRequest>) => ({
 			method: "post",
 			body,
 		});
-	},
-	async getLongUrl(body: GetLongUrlBody): Promise<string> {
-		const data = await fetch<{ originalUrl: string }>("/forward", {
-			method: "post",
-			body,
-		});
-
-		return data.originalUrl;
 	},
 });
