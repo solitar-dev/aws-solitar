@@ -64,5 +64,18 @@ class NativeRuntimeHints : RuntimeHintsRegistrar {
                         MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
                     )
             }
+
+        // SLF4J 2.x resolves its binding via ServiceLoader at startup. In the native image that
+        // lookup can be missed, leaving the NOP logger ("No SLF4J providers were found") and no app
+        // logs. Register logback's provider class + its service descriptor so logging works
+        // natively.
+        hints.resources().registerPattern("META-INF/services/org.slf4j.spi.SLF4JServiceProvider")
+        hints
+            .reflection()
+            .registerTypeIfPresent(
+                classLoader,
+                "ch.qos.logback.classic.spi.LogbackServiceProvider",
+                MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
+            )
     }
 }
