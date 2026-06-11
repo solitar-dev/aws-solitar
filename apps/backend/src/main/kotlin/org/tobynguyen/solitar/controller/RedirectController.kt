@@ -24,10 +24,10 @@ class RedirectController(private val urlService: UrlService) {
             throw UrlNotFoundException("Short URL with code '$code' not found.")
         }
 
-        val entity = urlService.resolve(code)
+        val originalUrl = urlService.resolve(code)
 
         return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY)
-            .header(HttpHeaders.LOCATION, entity.originalUrl)
+            .header(HttpHeaders.LOCATION, originalUrl)
             .build()
     }
 

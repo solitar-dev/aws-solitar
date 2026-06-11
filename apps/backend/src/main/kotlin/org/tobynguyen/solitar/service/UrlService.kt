@@ -21,18 +21,18 @@ class UrlService(
 ) {
 
     /**
-     * Resolve a short code to its target URL. The lookup is Caffeine-cached (in the repository),
-     * but a [LinkForwardedEvent] is published on EVERY call so click stats stay exact. Publishing
-     * is best-effort: a transient SQS failure drops the click, never the redirect.
+     * Resolve a short code to its target URL. The lookup is ElastiCache (Valkey)-cached (in the
+     * repository), but a [LinkForwardedEvent] is published on EVERY call so click stats stay exact.
+     * Publishing is best-effort: a transient SQS failure drops the click, never the redirect.
      */
-    fun resolve(shortCode: String): UrlEntity {
-        val entity =
-            urlRepository.findById(shortCode)
+    fun resolve(shortCode: String): String {
+        val originalUrl =
+            urlRepository.findOriginalUrl(shortCode)
                 ?: throw UrlNotFoundException("Short URL with code '$shortCode' not found.")
 
         publish(QueueNames.LINK_FORWARDED, LinkForwardedEvent(shortCode = shortCode))
 
-        return entity
+        return originalUrl
     }
 
     /**

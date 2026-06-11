@@ -11,15 +11,21 @@ import software.amazon.awssdk.enhanced.dynamodb.model.PutItemEnhancedRequest
 import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException
 
 /**
- * DynamoDB-backed URL store (Enhanced Client). The read is cached in Caffeine; the redirect path
- * still emits a forwarded event per hit (see [org.tobynguyen.solitar.service.UrlService]).
+ * DynamoDB-backed URL store (Enhanced Client). The redirect lookup is cached in ElastiCache
+ * (Valkey) as a plain `code -> originalUrl` String; the redirect path still emits a forwarded event
+ * per hit (see [org.tobynguyen.solitar.service.UrlService]).
  */
 @Repository
 class UrlRepository(private val urlTable: DynamoDbTable<UrlEntity>) {
 
+    /**
+     * Resolve a code to its target URL, cached in Valkey. Returns the `originalUrl` String (not the
+     * immutable [UrlEntity]) so the cache value is a trivial String round-trip. Called cross-bean
+     * from [org.tobynguyen.solitar.service.UrlService] so the `@Cacheable` proxy actually engages.
+     */
     @Cacheable(value = [CacheConfig.URL_FORWARD_CACHE], key = "#code", unless = "#result == null")
-    fun findById(code: String): UrlEntity? =
-        urlTable.getItem(Key.builder().partitionValue(code).build())
+    fun findOriginalUrl(code: String): String? =
+        urlTable.getItem(Key.builder().partitionValue(code).build())?.originalUrl
 
     /**
      * Conditional put guaranteeing the code is unused. Returns `false` on collision so the caller

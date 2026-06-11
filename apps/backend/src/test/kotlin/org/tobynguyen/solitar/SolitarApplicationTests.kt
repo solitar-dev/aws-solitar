@@ -23,6 +23,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.header
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.testcontainers.containers.GenericContainer
 import org.testcontainers.localstack.LocalStackContainer
 import org.testcontainers.utility.DockerImageName
 import org.tobynguyen.solitar.util.CodeGenerator
@@ -133,6 +134,22 @@ class SolitarApplicationTests {
             .andExpect(header().string("Location", "https://example.com/second"))
     }
 
+    @Test
+    @Order(6)
+    fun `second redirect for same code is served from the valkey cache`() {
+        val target = "https://example.com/cached-target"
+        val shortCode = createShortCode(target)
+
+        // First hit populates the cache; the second must round-trip through Valkey (serialize on
+        // write, deserialize on read) and still return the same Location.
+        repeat(2) {
+            mockMvc
+                .perform(get("/$shortCode"))
+                .andExpect(status().isMovedPermanently)
+                .andExpect(header().string("Location", target))
+        }
+    }
+
     private fun createShortCode(url: String): String {
         val body =
             mockMvc
@@ -173,8 +190,12 @@ class SolitarApplicationTests {
             LocalStackContainer(DockerImageName.parse("localstack/localstack:3.8"))
                 .withServices("dynamodb", "sqs")
 
+        private val valkey =
+            GenericContainer(DockerImageName.parse("valkey/valkey:8-alpine")).withExposedPorts(6379)
+
         init {
             localstack.start()
+            valkey.start()
             provisionResources()
         }
 
@@ -231,6 +252,11 @@ class SolitarApplicationTests {
             registry.add("spring.cloud.aws.credentials.secret-key") { localstack.secretKey }
             registry.add("spring.cloud.aws.dynamodb.endpoint") { localstack.endpoint.toString() }
             registry.add("spring.cloud.aws.sqs.endpoint") { localstack.endpoint.toString() }
+
+            // Point the redirect cache at the loopback Valkey container (plaintext, no TLS).
+            registry.add("spring.data.redis.host") { valkey.host }
+            registry.add("spring.data.redis.port") { valkey.getMappedPort(6379) }
+            registry.add("spring.data.redis.ssl.enabled") { false }
         }
     }
 }

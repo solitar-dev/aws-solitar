@@ -12,10 +12,11 @@ import org.tobynguyen.solitar.model.event.LinkForwardedEvent
  * GraalVM reachability hints for classes touched reflectively at runtime. Registered via
  * `@ImportRuntimeHints` on the application class.
  *
- * NOTE: The Caffeine class list below is a best-effort starting set covering a bounded +
- * expireAfterWrite cache. The EXACT set must be confirmed by running the native spike
- * (`nativeCompile` on a Docker/ARM64 host — phase-02 step 1) and adding any class the build/runtime
- * flags as `ClassNotFoundException`. `registerTypeIfPresent` makes wrong guesses harmless no-ops.
+ * NOTE: The redirect cache is backed by ElastiCache (Valkey) through Spring Data Redis + Lettuce,
+ * which ship their own GraalVM reachability metadata in Spring Boot 4 — so no manual Redis/Lettuce
+ * hints are registered here. Add one only if a native build flags a specific
+ * `ClassNotFoundException` on the Redis path. `registerTypeIfPresent` makes wrong guesses harmless
+ * no-ops.
  */
 class NativeRuntimeHints : RuntimeHintsRegistrar {
 
@@ -44,26 +45,6 @@ class NativeRuntimeHints : RuntimeHintsRegistrar {
                     MemberCategory.DECLARED_FIELDS,
                 )
         }
-
-        // Caffeine generates its cache implementation + factory classes by feature combination and
-        // loads them by name. Confirm/extend against the native spike output.
-        listOf(
-                "com.github.benmanes.caffeine.cache.SSMSW",
-                "com.github.benmanes.caffeine.cache.SSLMSW",
-                "com.github.benmanes.caffeine.cache.SSMSA",
-                "com.github.benmanes.caffeine.cache.PSMS",
-                "com.github.benmanes.caffeine.cache.PSWMS",
-                "com.github.benmanes.caffeine.cache.BoundedLocalCache",
-            )
-            .forEach { name ->
-                hints
-                    .reflection()
-                    .registerTypeIfPresent(
-                        classLoader,
-                        name,
-                        MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
-                    )
-            }
 
         // SLF4J 2.x resolves its binding via ServiceLoader at startup. In the native image that
         // lookup can be missed, leaving the NOP logger ("No SLF4J providers were found") and no app
