@@ -15,7 +15,7 @@ app:
   cors:
     allowed-origins:
       - "http://localhost:3000"
-      - "https://staging.solitar.link"
+      - "https://aws.fugiat.store"
   rate-limiter:
     capacity: 10
     refill-period-in-seconds: 30

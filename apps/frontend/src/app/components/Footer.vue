@@ -30,7 +30,7 @@ const footerItems = computed<FooterColumn[]>(() => [
 			},
 			{
 				name: $t("footer.item.status"),
-				link: "https://status.solitar.link",
+				link: "https://example.com",
 			},
 		],
 	},
