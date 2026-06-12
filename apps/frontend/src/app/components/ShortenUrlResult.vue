@@ -10,12 +10,14 @@ type Props = {
 
 const { url } = defineProps<Props>();
 
-const qrCode = computed(() => useQRCode(url));
+const shortLink = computed(() => `https://aws.fugiat.store/${url.split("/").pop()}`);
+
+const qrCode = computed(() => useQRCode(shortLink.value));
 const { copy } = useClipboard();
 const { $toast } = useNuxtApp();
 
 function copyUrl() {
-	copy(url);
+	copy(shortLink.value);
 	$toast.success("Copied");
 }
 
@@ -31,10 +33,10 @@ function downloadQr() {
 	<SModal :is-open :open-modal :close-modal class="w-11/12 max-w-xl font-mono">
 		<template #title>
 			<NuxtLink
-				:to="url"
+				:to="shortLink"
 				class="text-fg text-lg font-mono font-bold underline-link"
 				target="_blank"
-				>{{ url }}<i class="i-tabler-external-link align-top"></i
+				>{{ shortLink }}<i class="i-tabler-external-link align-top"></i
 			></NuxtLink>
 		</template>
 
